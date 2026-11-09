@@ -10,7 +10,7 @@ class PackageSourceDeletionTest {
     @get:Rule val temporary = TemporaryFolder()
 
     @Test fun deletesAllSelectedArchivesOnlyInTheCurrentApplication() {
-        val root = temporary.newFolder("com.ai.assistance.operit.kong", "files", "packages")
+        val root = temporary.newFolder("com.ai.assistance.operit.orbit", "files", "packages")
         val official = temporary.newFolder("com.ai.assistance.operit", "files", "packages")
         val oldArchive = File(root, "plugin-old.toolpkg").apply { writeText("old") }
         val newArchive = File(root, "plugin-new.toolpkg").apply { writeText("new") }
@@ -24,7 +24,7 @@ class PackageSourceDeletionTest {
     }
 
     @Test fun refusesSourcesOutsideTheCurrentApplicationBeforeDeletingAnything() {
-        val root = temporary.newFolder("kong")
+        val root = temporary.newFolder("orbit")
         val local = File(root, "plugin.toolpkg").apply { writeText("local") }
         val outside = temporary.newFile("outside.toolpkg")
         assertFalse(deleteInstalledPackageSources(root, listOf(local.path, outside.path)))

@@ -21,7 +21,7 @@ plugins {
     id("kotlin-kapt")
 }
 
-// 此独立发行分支在 GitHub Actions 中生成固定签名的 Kong 共存包。
+// 此独立发行分支在 GitHub Actions 中生成固定签名的 Orbit 共存包。
 val ciPreviewRelease = providers.environmentVariable("GITHUB_ACTIONS").orNull == "true"
 val ciDistributionCertificateSha256 = "AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35"
 
@@ -481,8 +481,8 @@ android {
         }
         if (ciPreviewRelease) {
             getByName("release") {
-                manifest.srcFile("src/kong/AndroidManifest.xml")
-                res.srcDir("src/kong/res")
+                manifest.srcFile("src/orbit/AndroidManifest.xml")
+                res.srcDir("src/orbit/res")
             }
         }
     }
@@ -561,7 +561,7 @@ android {
             )
             if (ciPreviewRelease) {
                 // 包名和固定签名共同维持独立发行版后续覆盖安装的身份。
-                applicationIdSuffix = ".kong"
+                applicationIdSuffix = ".orbit"
                 signingConfig = signingConfigs.getByName("ciDistribution")
             } else if (releaseSigningConfig != null) {
                 signingConfig = releaseSigningConfig
@@ -599,7 +599,7 @@ android {
         if (buildType.name == "release" && ciPreviewRelease) {
             outputs.all {
                 val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-                output.outputFileName = "app-kong.apk"
+                output.outputFileName = "app_orbit.apk"
             }
         }
         if (buildType.name == "nightly") {
@@ -706,12 +706,12 @@ tasks.matching { it.name == "assembleNightly" }.configureEach {
 if (ciPreviewRelease) {
     val verifyCiPreviewRelease by tasks.registering {
         group = "verification"
-        description = "Verifies the signed Kong coexist APK."
+        description = "Verifies the signed Orbit coexist APK."
         dependsOn("assembleRelease")
         doLast {
-            val apkFile = layout.buildDirectory.file("outputs/apk/release/app-kong.apk").get().asFile
+            val apkFile = layout.buildDirectory.file("outputs/apk/release/app_orbit.apk").get().asFile
             require(apkFile.isFile && apkFile.length() > 0) {
-                "Kong coexist APK was not produced: ${apkFile.path}"
+                "Orbit coexist APK was not produced: ${apkFile.path}"
             }
             val sdkDirectory = File(requiredLocalProperty("sdk.dir"))
             val apksigner = sdkDirectory.resolve("build-tools/35.0.0/apksigner")
@@ -723,7 +723,7 @@ if (ciPreviewRelease) {
             val certificateSha256 = Regex("""Signer #1 certificate SHA-256 digest: ([0-9a-fA-F]+)""")
                 .find(signingReport)?.groupValues?.get(1)
             require(certificateSha256 != null && certificateSha256.equals(ciDistributionCertificateSha256, ignoreCase = true)) {
-                "Kong coexist APK has an unexpected signing certificate"
+                "Orbit coexist APK has an unexpected signing certificate"
             }
             // 校验实际 APK 的包名和调试标记，避免把调试产物当作发行包上传。
             val aapt2 = sdkDirectory.resolve("build-tools/35.0.0/aapt2")
@@ -732,16 +732,16 @@ if (ciPreviewRelease) {
                 commandLine(aapt2.path, "dump", "badging", apkFile.path)
             }.standardOutput.asText.get()
             require(badging.lineSequence().any {
-                it.startsWith("package: name='com.ai.assistance.operit.kong' ")
+                it.startsWith("package: name='com.ai.assistance.operit.orbit' ")
             }) {
-                "Kong coexist APK has an unexpected package name"
+                "Orbit coexist APK has an unexpected package name"
             }
             require(badging.lineSequence().none {
                 it.startsWith("application-debuggable")
             }) {
-                "Kong coexist APK must not be debuggable"
+                "Orbit coexist APK must not be debuggable"
             }
-            val badgingReport = layout.buildDirectory.file("reports/kong-preview/apk-badging.txt").get().asFile
+            val badgingReport = layout.buildDirectory.file("reports/orbit-preview/apk-badging.txt").get().asFile
             badgingReport.parentFile.mkdirs()
             badgingReport.writeText(badging)
             badgingReport.resolveSibling("apk-signing.txt").writeText(signingReport)

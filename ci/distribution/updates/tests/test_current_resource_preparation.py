@@ -120,7 +120,7 @@ class PrepareCurrentResourcesTest(unittest.TestCase):
     def prepared_apk(self):
         output = self.root / 'candidate'
         current.prepare_current(self.packages, output)
-        apk = self.root / 'app-kong.apk'
+        apk = self.root / 'app_orbit.apk'
         with zipfile.ZipFile(apk, 'w') as package:
             package.writestr('assets/offline-packs.json', self.pinned.read_bytes())
             package.writestr('assets/builtin-extensions.json', self.builtin.read_bytes())

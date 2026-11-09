@@ -26,7 +26,7 @@ def validate_release(cleanup: dict, release_plan: dict, published: dict, commit:
     if release_plan["tag"] != tag or published["tag_name"] != tag or published["draft"] or published["prerelease"]:
         raise ValueError("必须先公开计划对应的正式 Release")
     expected = {item["name"]: {"size": item["bytes"], "digest": "sha256:" + item["sha256"]} for item in release_plan["assets"]}
-    if not {"app-kong.apk", "distribution-release.json"} <= expected.keys() or asset_specs(published["assets"]) != expected:
+    if not {"app_orbit.apk", "distribution-release.json"} <= expected.keys() or asset_specs(published["assets"]) != expected:
         raise ValueError("公开发行附件与本轮发布计划不一致")
     branches = cleanup["branches"]
     if not branches or len(branches) != len(set(branches)):

@@ -53,7 +53,7 @@ def destination(release: dict) -> str:
     tag = release["tag_name"]
     if tag.startswith("resources-"):
         return RESOURCE_REPOSITORY
-    if VERSION_PATTERN.fullmatch(tag) and any(asset["name"] == "app-kong.apk" for asset in release["assets"]):
+    if VERSION_PATTERN.fullmatch(tag) and any(asset["name"] == "app_orbit.apk" for asset in release["assets"]):
         return UPDATE_REPOSITORY
     raise ValueError("不能确定发行职责，必须先人工核对：" + tag)
 
@@ -145,7 +145,7 @@ def initialize_repositories() -> None:
     for repository, label in [(UPDATE_REPOSITORY, "正式版与补丁版发行"), (RESOURCE_REPOSITORY, "固定离线资源发行")]:
         name = repository.split("/", 1)[1]
         if repository not in owned:
-            api("user/repos", {"name": name, "description": "Operit Kong · " + label,
+            api("user/repos", {"name": name, "description": "Operit Orbit · " + label,
                                "private": False, "auto_init": True, "license_template": "lgpl-3.0"})
         else:
             info = owned[repository]

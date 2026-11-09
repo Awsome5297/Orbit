@@ -11,7 +11,7 @@
 
 ## 发行与覆盖安装
 
-Android Build 默认任务为 `:app:verifyCiPreviewRelease`，只构建并上传 `app-kong.apk`。校验任务检查签名有效性、证书指纹、包名 `com.ai.assistance.operit.kong` 和非调试属性。公开证书 SHA-256 为 `AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35`。
+Android Build 默认任务为 `:app:verifyCiPreviewRelease`，只构建并上传 `app_orbit.apk`。校验任务检查签名有效性、证书指纹、包名 `com.ai.assistance.operit.orbit` 和非调试属性。公开证书 SHA-256 为 `AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35`。
 
 Orbit 使用单仓库发行：源码、应用 Release、补丁和离线资源都位于 `Awsome5297/Orbit`。发布使用 Actions 内置 `GITHUB_TOKEN`，不再依赖额外的跨仓库 PAT。
 

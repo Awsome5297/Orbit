@@ -20,8 +20,8 @@ sys.path.insert(0, str(ROOT / "ci/distribution/resources"))
 from prepare_current_resources import release_prepared
 
 REPOSITORY = SOURCE_REPOSITORY
-APK_NAME = "app-kong.apk"
-PACKAGE_NAME = "com.ai.assistance.operit.kong"
+APK_NAME = "app_orbit.apk"
+PACKAGE_NAME = "com.ai.assistance.operit.orbit"
 CERTIFICATE_SHA256 = "AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35"
 VERSION_PATTERN = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:\+(\d+))?$")
 

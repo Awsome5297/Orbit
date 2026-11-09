@@ -10,7 +10,7 @@ import org.json.JSONObject
 internal object DistributionReleaseResolver {
     const val OWNER = "Awsome5297"
     const val REPOSITORY = "Orbit"
-    const val APK_NAME = "app-kong.apk"
+    const val APK_NAME = "app_orbit.apk"
     private val versionPattern = Regex("""^\d+\.\d+\.\d+(?:\+\d+)?$""")
 
     fun resolve(

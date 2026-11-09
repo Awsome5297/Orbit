@@ -8,7 +8,7 @@
 
 自动检查与手动检查共用 Beta 计划开关：关闭时仅选择 `x.y.z` 正式版，开启后也选择 `x.y.z+n` 补丁版。先过滤渠道，再比较数字版本。退出 Beta 不降级已有补丁版，仍可安装更高基础版本的正式版。开关变化后清除旧检查结果。
 
-首次切换通过完整 APK 安装。包名保持 `com.ai.assistance.operit.kong`，沿用已有固定签名，versionCode 递增。仅创建标签或上传 Actions artifact 不会形成可发现的应用更新。完整 APK 必须随 Release 保存，供新用户安装和后续生成补丁。
+首次切换通过完整 APK 安装。包名为 `com.ai.assistance.operit.orbit`，沿用 Orbit 的固定签名，versionCode 递增。仅创建标签或上传 Actions artifact 不会形成可发现的应用更新。完整 APK 必须随 Release 保存，供新用户安装和后续生成补丁。
 
 ## 发布方法
 
@@ -18,7 +18,7 @@
 
 发布使用 Actions 内置 `GITHUB_TOKEN`，工作流已声明 `contents: write` 和 `actions: read`，不需要额外创建 `OPERIT_DISTRIBUTION_TOKEN` 或跨仓库 PAT。权限预检在签名构建前执行；缺少写入权限时明确失败。`complete_repository_migration` 与 `cleanup_merged_branches` 保持关闭，它们只用于上游历史迁移。
 
-发布脚本读取 APK 的真实版本，检查 Kong 包名、固定证书和递增内部版本号。应用版本先以草稿上传并核验，再公开为 Release；已有版本不覆盖。
+发布脚本读取 APK 的真实版本，检查 Orbit 包名、固定证书和递增内部版本号。应用版本先以草稿上传并核验，再公开为 Release；已有版本不覆盖。
 
 Build 发行步骤直接向 Orbit 发布，不创建额外的源码发行副本。源码提交和源码归档地址仍记录在正文与摘要中。Release tag 继续承载应用版本，已有标签不删除或移动。直接调用未变换的 `publish_release.py` 仍保留历史源码标签逻辑，正式发行应通过当前工作流。
 
@@ -28,7 +28,7 @@ Build 发行步骤直接向 Orbit 发布，不创建额外的源码发行副本�
 
 ```bash
 python3 ci/distribution/updates/publish_release.py \
-  --apk app/build/outputs/apk/release/app-kong.apk \
+  --apk app/build/outputs/apk/release/app_orbit.apk \
   --build-tools "$ANDROID_HOME/build-tools/35.0.0" \
   --repository Awsome5297/Orbit \
   --commit "$GITHUB_SHA" \
@@ -44,7 +44,7 @@ python3 ci/distribution/updates/publish_release.py \
 
 补丁仅连接同一基础版本的递增版本，基础 Release 标签必须与其 APK 内版本一致。跨基础版本使用完整 APK。客户端从补丁及元数据附件地址解析仓库，直接增量和跨版本链自动使用新仓库，不增加旧仓库查询分支。
 
-发行附件包括完整包 `app-kong.apk`、存在基线时的 `apkrawpatch_*.zip` 和配对 `patch_*.json`，以及 `distribution-release.json`。摘要保留版本、哈希、更新说明、Orbit 发行仓库和源码身份。正文使用非空可读文本或 Markdown，JSON 仅作为附件；历史 JSON 正文继续由既有客户端解析逻辑读取。
+发行附件包括完整包 `app_orbit.apk`、存在基线时的 `apkrawpatch_*.zip` 和配对 `patch_*.json`，以及 `distribution-release.json`。摘要保留版本、哈希、更新说明、Orbit 发行仓库和源码身份。正文使用非空可读文本或 Markdown，JSON 仅作为附件；历史 JSON 正文继续由既有客户端解析逻辑读取。
 
 安装器最多扫描最近 100 个 Release，补丁链最多连接 64 步。保留链上全部版本和配套文件，历史迁移时 APK 和增量 ZIP 字节保持不变；重新签名或打包的 APK 不适用原链。
 

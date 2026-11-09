@@ -43,16 +43,16 @@ class DistributionPublishingTest(unittest.TestCase):
         self.assertIsNone(publisher.select_previous_release(values, "1.12.2+3", "v1.12.3+1"))
 
     def test_apk_identity_and_fixed_signature_are_checked(self):
-        good = "package: name='com.ai.assistance.operit.kong' versionCode='54' versionName='1.12.2+2'\n"
+        good = "package: name='com.ai.assistance.operit.orbit' versionCode='54' versionName='1.12.2+2'\n"
         signed = "Signer #1 certificate SHA-256 digest: " + publisher.CERTIFICATE_SHA256.lower()
         with patch.object(publisher, "run", side_effect=[good, signed]):
-            self.assertEqual(54, publisher.inspect_apk(Path("app-kong.apk"), Path("sdk"))["versionCode"])
-        with patch.object(publisher, "run", return_value=good.replace(".kong", "")):
+            self.assertEqual(54, publisher.inspect_apk(Path("app_orbit.apk"), Path("sdk"))["versionCode"])
+        with patch.object(publisher, "run", return_value=good.replace(".orbit", "")):
             with self.assertRaisesRegex(ValueError, "包名"):
-                publisher.inspect_apk(Path("app-kong.apk"), Path("sdk"))
+                publisher.inspect_apk(Path("app_orbit.apk"), Path("sdk"))
         with patch.object(publisher, "run", side_effect=[good, "Signer #1 certificate SHA-256 digest: abc"]):
             with self.assertRaisesRegex(ValueError, "固定签名"):
-                publisher.inspect_apk(Path("app-kong.apk"), Path("sdk"))
+                publisher.inspect_apk(Path("app_orbit.apk"), Path("sdk"))
 
     def test_raw_patch_reconstructs_exact_target_and_reuses_unchanged_model(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -82,7 +82,7 @@ class DistributionPublishingTest(unittest.TestCase):
             self.assertEqual(target.read_bytes(), rebuilt.read_bytes())
 
     def test_empty_or_json_notes_are_rejected_before_apk_validation(self):
-        arguments = ["publish_release.py", "--apk", "app-kong.apk", "--build-tools", "sdk",
+        arguments = ["publish_release.py", "--apk", "app_orbit.apk", "--build-tools", "sdk",
                      "--repository", publisher.REPOSITORY, "--commit", "a" * 40]
         for notes in ["", "   ", '{"releaseNotes":"更新"}', '[{"version":"1.12.2+7"}]']:
             with self.subTest(notes=notes), patch("sys.argv", arguments + ["--notes", notes]):

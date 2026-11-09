@@ -14,7 +14,7 @@ class MergedBranchCleanupTest(unittest.TestCase):
         self.commit = "a" * 40
         self.cleanup = {"repository": SOURCE_REPOSITORY, "version": "1.12.2+22", "branches": ["fix/completed"]}
         self.plan = {"sourceCommit": self.commit, "tag": "v1.12.2+22", "repositories": [UPDATE_REPOSITORY],
-            "assets": [{"name": name, "bytes": 10, "sha256": "b" * 64} for name in ["app-kong.apk", "distribution-release.json"]]}
+            "assets": [{"name": name, "bytes": 10, "sha256": "b" * 64} for name in ["app_orbit.apk", "distribution-release.json"]]}
         self.published = {"tag_name": "v1.12.2+22", "draft": False, "prerelease": False,
             "assets": [{"name": item["name"], "size": 10, "state": "uploaded", "digest": "sha256:" + item["sha256"]} for item in self.plan["assets"]]}
 

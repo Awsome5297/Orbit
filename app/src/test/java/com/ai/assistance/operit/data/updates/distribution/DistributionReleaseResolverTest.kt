@@ -16,14 +16,14 @@ class DistributionReleaseResolverTest {
         status as UpdateStatus.PatchAvailable
         assertEquals("1.12.2+2", status.newVersion)
         assertTrue(status.patchUrl.contains("Awsome5297/Orbit/releases/"))
-        assertTrue(requireNotNull(status.fullApkUrl).endsWith("app-kong.apk"))
+        assertTrue(requireNotNull(status.fullApkUrl).endsWith("app_orbit.apk"))
     }
 
     @Test
     fun higherBaseVersionOffersFullApkEvenWhenPatchAssetsExist() {
         val status = DistributionReleaseResolver.resolve("1.12.2+1", true, listOf(release("1.12.3+1", patch = true)))
         assertTrue(status is UpdateStatus.Available)
-        assertTrue((status as UpdateStatus.Available).downloadUrl.endsWith("app-kong.apk"))
+        assertTrue((status as UpdateStatus.Available).downloadUrl.endsWith("app_orbit.apk"))
     }
 
     @Test
@@ -144,7 +144,7 @@ class DistributionReleaseResolverTest {
 
     @Test
     fun fullApkAndPatchPathsCarryTheirOwnPublishedDigestsAndSizes() {
-        val digests = mapOf("app-kong.apk" to "a".repeat(64),
+        val digests = mapOf("app_orbit.apk" to "a".repeat(64),
             "apkrawpatch_old_to_new.zip" to "b".repeat(64), "patch_old_to_new.json" to "c".repeat(64))
         fun withDigests(version: String) = release(version, patch = true).let { release ->
             release.copy(assets = release.assets.map { it.copy(digest = "sha256:${digests.getValue(it.name)}") })
@@ -175,7 +175,7 @@ class DistributionReleaseResolverTest {
         html_url = "https://github.com/Awsome5297/Orbit/releases/tag/v$version",
         created_at = "2026-10-15T00:00:00Z",
         assets = buildList {
-            add(asset("app-kong.apk"))
+            add(asset("app_orbit.apk"))
             if (patch) {
                 add(asset("apkrawpatch_old_to_new.zip"))
                 add(asset("patch_old_to_new.json"))
