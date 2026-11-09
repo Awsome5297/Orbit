@@ -199,11 +199,6 @@ def main() -> None:
     if args.prepare_only:
         print(json.dumps({"prepared": True, **plan}, ensure_ascii=False), flush=True)
         return
-    # 正式版的两个目的地都先检查，避免覆盖已存在的 Release。
-    if SOURCE_REPOSITORY in destinations:
-        source_releases = json.loads(run("gh", "api", f"repos/{SOURCE_REPOSITORY}/releases?per_page=100"))
-        if any(release["tag_name"] == tag for release in source_releases):
-            raise ValueError(f"主仓库发行版本已存在：{tag}")
     ensure_source_tag(tag, args.commit)
     # 各发行仓库的标签指向各自文档提交；源码身份由主仓库标签和附件中的源码提交固定。
     # 所有目的地都上传完草稿后再公开，客户端最后从统一更新仓库发现更新。

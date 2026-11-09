@@ -79,6 +79,7 @@
 - [离线语音试听回调崩溃](offline-tts-callback/index.md) · `offline-tts-callback`
 - [工作流并发、总结与语音条内存排查](oom-workflow-audio/index.md) · `oom-workflow-audio`
 - [OpenCode provider current requirements](opencode_provider_current_requirements_20260907/index.md) · `opencode_provider_current_requirements_20260907`
+- [Orbit 单仓发行测试修复](orbit-single-repo-release-test/index.md) · `orbit-single-repo-release-test`
 - [工具结果按调用顺序输出](ordered-tool-results/index.md) · `ordered-tool-results`
 - [已安装扩展删除](package-delete-source/index.md) · `package-delete-source`
 - [包工具 JSON 参数诊断](package-proxy-json-diagnostics/index.md) · `package-proxy-json-diagnostics`
