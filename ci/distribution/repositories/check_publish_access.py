@@ -24,7 +24,8 @@ def check(mode: str) -> None:
             raise ValueError("发行仓库必须先初始化许可证和说明：" + repository)
         subprocess.run(["gh", "api", f"repos/{repository}/git/ref/heads/{info['default_branch']}"], capture_output=True, text=True, check=True, timeout=30)
         requires_write = mode == "release" or repository == RESOURCE_REPOSITORY
-        if requires_write and not info["permissions"]["push"]:
+        # 内置 GITHUB_TOKEN 对同仓库的 permissions.push 会返回 false，实际写入能力由工作流 permissions 保证。
+        if requires_write and repository != os.environ.get("GITHUB_REPOSITORY", "") and not info["permissions"]["push"]:
             raise ValueError("凭据缺少仓库写入权限：" + repository)
         print("已核对发行访问权限：" + repository, flush=True)
 

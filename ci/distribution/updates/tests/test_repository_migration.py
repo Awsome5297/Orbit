@@ -136,6 +136,17 @@ class RepositoryMigrationTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, RESOURCE_REPOSITORY):
                 check_publish_access.check("release")
 
+    def test_release_preflight_accepts_same_repository_without_push_flag(self):
+        def response(command, **kwargs):
+            endpoint = command[2]
+            if '/git/ref/' in endpoint:
+                return SimpleNamespace(stdout='{}')
+            info = {"default_branch": "main", "permissions": {"push": False}}
+            return SimpleNamespace(stdout=json.dumps(info))
+
+        with patch.dict("os.environ", {"GH_TOKEN": "fixture", "GITHUB_REPOSITORY": SOURCE_REPOSITORY}), patch.object(check_publish_access.subprocess, "run", side_effect=response):
+            check_publish_access.check("release")
+
 
 class ResourceArtifactTest(unittest.TestCase):
     def test_valid_flat_artifact_extracts_and_unexpected_path_is_rejected(self):
