@@ -22,7 +22,7 @@ class BuiltInCatalogDiscoveryTest {
         put("assets", buildJsonArray {
             if (assetName != null) add(buildJsonObject {
                 put("name", assetName)
-                put("browser_download_url", "https://github.com/3316891527/Operit-Kong-resources/releases/download/$tag/$assetName")
+                put("browser_download_url", "https://github.com/Awsome5297/Orbit/releases/download/$tag/$assetName")
             })
         })
     }

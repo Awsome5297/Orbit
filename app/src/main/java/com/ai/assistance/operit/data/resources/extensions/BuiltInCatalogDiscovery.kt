@@ -12,7 +12,7 @@ internal data class BuiltInCatalogRelease(val tag: String, val assetName: String
 
 /** Both published layouts are explicit protocols; a broken latest release must remain an error. */
 internal object BuiltInCatalogDiscovery {
-    private const val PREFIX = "https://github.com/3316891527/Operit-Kong-resources/releases/download/"
+    private const val PREFIX = "https://github.com/Awsome5297/Orbit/releases/download/"
     private val json = Json { ignoreUnknownKeys = true }
 
     fun select(releases: JsonArray): BuiltInCatalogRelease {

@@ -89,6 +89,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: read
 
 env:
   JAVA_VERSION: '21'
@@ -154,14 +155,14 @@ jobs:
       - name: Validate cross-repository release access
         if: github.event_name == 'workflow_dispatch' && inputs.publish_release
         env:
-          GH_TOKEN: ${{ secrets.OPERIT_DISTRIBUTION_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: python3 ci/distribution/repositories/check_publish_access.py --mode release
       - name: Check distribution patch publishing
         run: python3 -m unittest discover -s ci/distribution/updates/tests -v
       - name: Migrate and verify historical distribution releases
         if: github.event_name == 'workflow_dispatch' && inputs.publish_release && inputs.complete_repository_migration
         env:
-          GH_TOKEN: ${{ secrets.OPERIT_DISTRIBUTION_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: python3 ci/distribution/repositories/migrate_releases.py --output .ci-repository-migration --apply
       - name: Initialize terminal submodule
         shell: bash
@@ -344,7 +345,7 @@ jobs:
       - name: Publish distribution release and patch
         if: github.event_name == 'workflow_dispatch' && inputs.publish_release
         env:
-          GH_TOKEN: ${{ secrets.OPERIT_DISTRIBUTION_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           PREVIOUS_TAG: ${{ inputs.previous_tag }}
           RELEASE_NOTES: ${{ inputs.release_notes }}
         shell: bash
@@ -393,7 +394,7 @@ jobs:
       - name: Clean merged work branches after verified publication
         if: github.event_name == 'workflow_dispatch' && inputs.publish_release && inputs.cleanup_merged_branches
         env:
-          GH_TOKEN: ${{ secrets.OPERIT_DISTRIBUTION_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           python3 ci/distribution/repositories/cleanup_merged_branches.py \
             --plan ci/distribution/repositories/branch-cleanup-plan.json \
@@ -403,7 +404,7 @@ jobs:
       - name: Complete verified repository migration
         if: github.event_name == 'workflow_dispatch' && inputs.publish_release && inputs.complete_repository_migration
         env:
-          GH_TOKEN: ${{ secrets.OPERIT_DISTRIBUTION_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           python3 ci/distribution/repositories/cleanup_main_releases.py \
             --receipts .ci-repository-migration/cleanup-receipts.json \
@@ -450,10 +451,10 @@ jobs:
           python-version: '3.12'
       - name: Validate cross-repository resource access
         env:
-          GH_TOKEN: ${{ secrets.OPERIT_DISTRIBUTION_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: python3 ci/distribution/repositories/check_publish_access.py --mode resources
       - name: Prepare, verify and publish resources
         env:
-          GH_TOKEN: ${{ secrets.OPERIT_DISTRIBUTION_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           SOURCE_ARTIFACT_ID: ${{ inputs.resource_artifact_id }}
         run: python3 ci/distribution/resources/publish_resources.py --source-artifact-id "${SOURCE_ARTIFACT_ID:-0}"

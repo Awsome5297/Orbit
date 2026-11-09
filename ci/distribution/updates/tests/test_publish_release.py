@@ -152,22 +152,21 @@ class DistributionPublishingTest(unittest.TestCase):
         creations = [command for command in commands if command[:3] == ("gh", "release", "create")]
         self.assertEqual(1, len(creations))
         self.assertEqual(publisher.UPDATE_REPOSITORY, creations[0][creations[0].index("--repo") + 1])
-        self.assertNotIn("--target", creations[0])
+        self.assertEqual("a" * 40, creations[0][creations[0].index("--target") + 1])
         self.assertEqual("a" * 40, manifest["sourceCommit"])
         self.assertEqual(publisher.REPOSITORY, manifest["sourceRepository"])
         self.assertEqual([publisher.UPDATE_REPOSITORY], plan["repositories"])
         self.assertEqual(("v1.12.2+15", "a" * 40), tags[0].args)
 
-    def test_stable_release_uploads_both_drafts_before_publishing_either(self):
+    def test_stable_release_uses_single_repository(self):
         commands, _, _, plan = self.publish_without_baseline("1.12.3")
         creations = [(index, command) for index, command in enumerate(commands) if command[:3] == ("gh", "release", "create")]
         publications = [index for index, command in enumerate(commands) if command[:3] == ("gh", "release", "edit")]
-        self.assertEqual([publisher.REPOSITORY, publisher.UPDATE_REPOSITORY], plan["repositories"])
-        self.assertEqual(2, len(creations))
-        self.assertEqual(2, len(publications))
-        self.assertLess(max(index for index, _ in creations), min(publications))
+        self.assertEqual([publisher.UPDATE_REPOSITORY], plan["repositories"])
+        self.assertEqual(1, len(creations))
+        self.assertEqual(1, len(publications))
+        self.assertLess(creations[0][0], publications[0])
         self.assertEqual("a" * 40, creations[0][1][creations[0][1].index("--target") + 1])
-        self.assertNotIn("--target", creations[1][1])
 
     def test_preparation_does_not_create_tag_or_release(self):
         commands, tags, _, plan = self.publish_without_baseline("1.12.2+15", prepare_only=True)

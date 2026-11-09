@@ -63,7 +63,7 @@ import kotlinx.coroutines.withContext
 import java.util.Locale
 
 private const val UPSTREAM_PROJECT_URL = "https://github.com/AAswordman/Operit"
-private const val CURRENT_PROJECT_URL = "https://github.com/3316891527/Operit"
+private const val CURRENT_PROJECT_URL = "https://github.com/Awsome5297/Orbit"
 
 private enum class PatchUpdatePhase {
     DOWNLOADING_META,
@@ -1000,7 +1000,7 @@ fun AboutScreen(
                             icon = Icons.Default.Language,
                             iconTint = MaterialTheme.colorScheme.secondary,
                             title = stringResource(R.string.project_url),
-                            subtitleText = "3316891527/Operit",
+                            subtitleText = "Awsome5297/Orbit",
                             trailing = {
                                 Icon(if (projectMenuExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, null)
                             },
@@ -1076,7 +1076,7 @@ fun AboutScreen(
                         icon = Icons.Default.Email,
                         iconTint = MaterialTheme.colorScheme.primary,
                         title = stringResource(R.string.about_distribution_feedback),
-                        subtitleText = "3316891527/Operit · GitHub Issues",
+                        subtitleText = "Awsome5297/Orbit · GitHub Issues",
                         onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("$CURRENT_PROJECT_URL/issues"))) }
                     )
 
@@ -1101,8 +1101,8 @@ fun AboutScreen(
                         icon = Icons.Default.Person,
                         iconTint = MaterialTheme.colorScheme.primary,
                         title = stringResource(R.string.about_distribution_maintainer),
-                        subtitleText = "3316891527",
-                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/3316891527"))) },
+                        subtitleText = "Awsome5297",
+                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Awsome5297"))) },
                     )
                 }
             }

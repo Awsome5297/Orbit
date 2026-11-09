@@ -120,16 +120,16 @@ class RepositoryMigrationTest(unittest.TestCase):
 
     def test_missing_cross_repository_credential_fails_before_network(self):
         with patch.dict("os.environ", {"GH_TOKEN": ""}), patch.object(check_publish_access.subprocess, "run") as execute:
-            with self.assertRaisesRegex(ValueError, "OPERIT_DISTRIBUTION_TOKEN"):
+            with self.assertRaisesRegex(ValueError, "GH_TOKEN"):
                 check_publish_access.check("release")
         execute.assert_not_called()
 
-    def test_release_preflight_requires_resource_repository_write_access(self):
+    def test_release_preflight_requires_repository_write_access(self):
         def response(command, **kwargs):
             endpoint = command[2]
             if '/git/ref/' in endpoint:
                 return SimpleNamespace(stdout='{}')
-            info = {"default_branch": "main", "permissions": {"push": RESOURCE_REPOSITORY not in endpoint}}
+            info = {"default_branch": "main", "permissions": {"push": False}}
             return SimpleNamespace(stdout=json.dumps(info))
 
         with patch.dict("os.environ", {"GH_TOKEN": "fixture"}), patch.object(check_publish_access.subprocess, "run", side_effect=response):

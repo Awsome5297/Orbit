@@ -1,0 +1,42 @@
+name: Bootstrap resources
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    name: Mirror upstream resources into Orbit
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Mirror fixed resources and pinned offline packs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_REPOSITORY: 3316891527/Operit-Kong-resources
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mirror_release() {
+            local tag="$1"
+            local title="$2"
+            local directory="$3"
+            mkdir -p "$directory"
+            gh release download "$tag" --repo "$UPSTREAM_REPOSITORY" --dir "$directory"
+            if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              gh release upload "$tag" "$directory"/* --repo "$GITHUB_REPOSITORY" --clobber
+            else
+              gh release create "$tag" "$directory"/* \
+                --repo "$GITHUB_REPOSITORY" \
+                --title "$title" \
+                --notes "从 $UPSTREAM_REPOSITORY 镜像的离线资源，文件字节与 SHA-256 未修改。"
+            fi
+          }
+
+          mirror_release "resources-v1" "离线资源 v1" "upstream-resources-v1"
+          mirror_release "resources-v2-d16730007f8d94095264" "离线资源 v2" "upstream-resources-v2"
+          mirror_release "resources-v2-27aa8eec7b5c78a17629" "离线资源 v2 历史 1" "upstream-resources-v2-27aa"
+          mirror_release "resources-v2-f67fc0082a8e638c6cc2" "离线资源 v2 历史 2" "upstream-resources-v2-f67f"

@@ -23,7 +23,7 @@ plugins {
 
 // 此独立发行分支在 GitHub Actions 中生成固定签名的 Kong 共存包。
 val ciPreviewRelease = providers.environmentVariable("GITHUB_ACTIONS").orNull == "true"
-val ciDistributionCertificateSha256 = "5E01FFF4DD01A44BAB8318BE35107AE39C60A1261CFCE33003EA3528727EA799"
+val ciDistributionCertificateSha256 = "AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35"
 
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")

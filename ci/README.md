@@ -70,7 +70,7 @@ JVM lane 只下载 `libs.zip`，完整 Android lane 下载 `libs.zip` 和 `jniLi
 
 [Sync terminal core](../.github/workflows/sync-terminal-core.yml) 在 `dev`、`main` 更新 `terminal`、`.gitmodules` 或同步实现时自动调用 [同步脚本](script/sync_terminal_core.py)。它不初始化子模块、不编译应用，读取两个分支最新应用提交的 gitlink、选择包含另一版本的较新提交后，通过 GitHub API 快进终端仓库的默认分支。运行摘要记录触发提交、两个分支的终端引用和更新前后版本。同组等待运行可能被后续事件合并，每次读取最新引用可避免漏同步。
 
-沿用源码仓库的 `OPERIT_DISTRIBUTION_TOKEN` secret，该凭据需对 `3316891527/OperitTerminalCore` 具有 Contents 写权限。工作流只处理维护者仓库的 `dev`、`main`，不在 PR 或其他 fork 中使用该凭据。
+沿用源码仓库的 `OPERIT_DISTRIBUTION_TOKEN` secret，该凭据需对 `3316891527/OperitTerminalCore` 具有 Contents 写权限。工作流只处理维护者仓库的 `dev`、`main`，不在 PR 或其他 fork 中使用该凭据。Orbit 不参与该同步；工作流的 `if` 只匹配 `3316891527/Operit`，在 Orbit 中会直接跳过，不需要创建该 secret。
 
 后续开发仍在终端子模块内提交并推送核心代码，再在 Operit 中提交 `terminal` 引用；合入 `dev` 后自动更新终端默认分支，无需另行复制文件或手工合并默认分支。没有提交或没有推送的本地修改不包含在 gitlink 中。主应用中的终端页面、工具适配代码仍由主应用维护。
 

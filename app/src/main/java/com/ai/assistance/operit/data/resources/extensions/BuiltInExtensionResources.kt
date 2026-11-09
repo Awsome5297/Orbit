@@ -46,13 +46,13 @@ object BuiltInExtensionResources {
             val extension = requireNotNull(spec.extension)
             require(extension.kind == identity.kind && extension.path == identity.path &&
                 extension.packageNames.first() == identity.packageNames.first()) { "Built-in identity changed: ${spec.id}" }
-            require(spec.archive.url == "https://github.com/3316891527/Operit-Kong-resources/releases/download/${catalog.releaseTag}/${spec.archive.path}")
+            require(spec.archive.url == "https://github.com/Awsome5297/Orbit/releases/download/${catalog.releaseTag}/${spec.archive.path}")
         }
     }
     fun refreshCatalog(context: Context) {
         // Resource releases deliberately do not replace the application's latest-release pointer.
         val releases = client.newCall(Request.Builder()
-            .url("https://api.github.com/repos/3316891527/Operit-Kong-resources/releases?per_page=30")
+            .url("https://api.github.com/repos/Awsome5297/Orbit/releases?per_page=100")
             .header("Accept", "application/vnd.github+json").build()).execute().use {
             check(it.isSuccessful) { "Built-in catalog discovery failed: HTTP ${it.code}" }
             json.parseToJsonElement(requireNotNull(it.body).string()).jsonArray

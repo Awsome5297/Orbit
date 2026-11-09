@@ -11,7 +11,11 @@
 
 ## 发行与覆盖安装
 
-Android Build 默认任务为 `:app:verifyCiPreviewRelease`，只构建并上传 `app-kong.apk`。校验任务检查签名有效性、证书指纹、包名 `com.ai.assistance.operit.kong` 和非调试属性。公开证书 SHA-256 为 `5E01FFF4DD01A44BAB8318BE35107AE39C60A1261CFCE33003EA3528727EA799`。
+Android Build 默认任务为 `:app:verifyCiPreviewRelease`，只构建并上传 `app-kong.apk`。校验任务检查签名有效性、证书指纹、包名 `com.ai.assistance.operit.kong` 和非调试属性。公开证书 SHA-256 为 `AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35`。
+
+Orbit 使用单仓库发行：源码、应用 Release、补丁和离线资源都位于 `Awsome5297/Orbit`。发布使用 Actions 内置 `GITHUB_TOKEN`，不再依赖额外的跨仓库 PAT。
+
+首次发行顺序：先手动运行一次 `Bootstrap resources`，把上游 `resources-v1`、当前 `resources-v2` 与历史安装记录引用的两个 `resources-v2-*` 标签镜像到 Orbit；之后运行 `Build` 并勾选 `publish_release`。资源引导只做一次，后续资源版本由正式发布流程生成。
 
 首个固定签名版本为 `1.12.2-personal.1`，版本号 52。后续发行须保留此密钥和包名，并提高版本号。重新生成密钥会改变应用安装身份；旧 CI 临时调试签名包无法仅凭此新密钥直接覆盖。密钥文件与密码由发行维护者另行备份，GitHub Secrets 不能代替可恢复的本地密钥备份。
 

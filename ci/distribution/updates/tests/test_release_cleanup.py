@@ -20,7 +20,7 @@ class ReleaseCleanupTest(unittest.TestCase):
     def setUp(self):
         self.commit = 'a' * 40
         self.source = [{'id': 10, 'tag_name': 'v1.12.2+14', 'draft': False, 'prerelease': False, 'assets': [asset('app-kong.apk')]}]
-        self.target = {UPDATE_REPOSITORY: [copy.deepcopy(self.source[0])], RESOURCE_REPOSITORY: []}
+        self.target = {UPDATE_REPOSITORY: [copy.deepcopy(self.source[0])]}
         self.receipts = {'sourceRepository': SOURCE_REPOSITORY, 'updateRepository': UPDATE_REPOSITORY,
                          'resourceRepository': RESOURCE_REPOSITORY, 'releases': [
                              {'tag': 'v1.12.2+14', 'repository': UPDATE_REPOSITORY, 'sourceReleaseId': 10,
@@ -56,7 +56,7 @@ class ReleaseCleanupTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.resolve()
         self.plan['sourceCommit'] = self.commit
-        self.plan['repositories'] = [SOURCE_REPOSITORY]
+        self.plan['repositories'] = ['example/Other']
         with self.assertRaises(ValueError):
             self.resolve()
 
