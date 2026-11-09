@@ -8,27 +8,17 @@
 
 ## 计划索引
 
-- [提示词编辑状态与更新下载来源适配](prompt-editing-and-update-sources/index.md)
-- [Code Runner 运行隔离与命令收尾](code-runner-execution-isolation/index.md)
-
-- [密钥池错误的实际请求范围](key-pool-error-scope/index.md)
-
-- [工作区复制内存与文件操作进度](workspace-copy-streaming-progress/index.md)
-
-- [流式气泡停更修复](streaming-bubble-freeze/index.md)
-- [提示、插件配置入口与 Waifu 首次展示](ux-stream-ui-followup/index.md)
-- [语音条 WebView 挂载焦点修复](toolpkg-webview-focus/index.md) · `toolpkg-webview-focus`
-
-- [包管理四标签等宽铺满](package-tabs-full-width/index.md)
-
-- [流式协议元数据隐藏](streaming-protocol-meta/index.md) · `streaming-protocol-meta`
-- [历史摘要协议负载过滤](summary-protocol-meta/index.md) · `summary-protocol-meta`
-- [模型上下文协议手动启动与元数据兼容](mcp-manual-start/index.md) · `mcp-manual-start`
-- [界面与媒体交互修复](interface-media-polish/index.md) · `interface-media-polish`
-
+- [A2UI 动态表格与结构化事件上下文](a2ui-catalog-expressions/index.md) · `a2ui-catalog-expressions`
+- [A2UI 编译说明与消息投递](a2ui-generation-delivery/index.md) · `a2ui-generation-delivery`
+- [A2UI HTML 标签切换生命周期](a2ui-tab-composition/index.md) · `a2ui-tab-composition`
 - [Antigravity OAuth 修复、移除 Vertex AI 登录与指纹伪装](antigravity_oauth_repair_20260928/index.md) · `antigravity_oauth_repair_20260928`
 - [API Key 首次引导修复](api_key_onboarding/index.md) · `api_key_onboarding`
+- [默认启动保留应用任务](app-launch-preserve-task/index.md) · `app-launch-preserve-task`
+- [附件成功提示与点击关闭](attachment-success-toast/index.md) · `attachment-success-toast`
+- [BLE 写入属性、MTU 分片与会话串行化](ble-write-properties-and-mtu/index.md) · `ble-write-properties-and-mtu`
+- [修复浏览器 ref 点击的 WebView 线程访问](browser-ref-main-thread/index.md) · `browser-ref-main-thread`
 - [Calculator Qualified API Repair](calculator_qualified_api_repair_20260809/index.md) · `calculator_qualified_api_repair_20260809`
+- [取消消息发送导致进程退出](cancel-request-crash/index.md) · `cancel-request-crash`
 - [聊天角色卡 UUID 绑定回退](character_card_uuid_binding_rollback_20260805/index.md) · `character_card_uuid_binding_rollback_20260805`
 - [会话删除状态与锁定提示修复](chat-delete-state/index.md) · `chat-delete-state`
 - [聊天历史加载与分块渲染性能](chat-history-render-performance/index.md) · `chat-history-render-performance`
@@ -36,14 +26,27 @@
 - [会话累计 Token 统计恢复](chat-token-stat-restoration/index.md) · `chat-token-stat-restoration`
 - [超大聊天消息读取修复](chat_large_message_io_20260806/index.md) · `chat_large_message_io_20260806`
 - [Claude 工具结果配对修复](claude_tool_result_pairing_repair_20260907/index.md) · `claude_tool_result_pairing_repair_20260907`
+- [Code Runner 运行隔离与命令收尾](code-runner-execution-isolation/index.md) · `code-runner-execution-isolation`
 - [Codex Auth Keystore Restore Crash](codex_auth_keystore_restore_20260904/index.md) · `codex_auth_keystore_restore_20260904`
-- [崩溃报告自动换行开关反馈](crash-report-wrap-feedback/index.md)
+- [保留消息复制预览选区与滚动位置](copy-preview-state/index.md) · `copy-preview-state`
+- [崩溃报告自动换行开关反馈](crash-report-wrap-feedback/index.md) · `crash-report-wrap-feedback`
+- [DeepSeek 图片输入与 read_file 读图](deepseek-image-input/index.md) · `deepseek-image-input`
 - [DeepSeek Responses Reasoning Replay](deepseek_responses_reasoning_replay_20260907/index.md) · `deepseek_responses_reasoning_replay_20260907`
+- [工具错误去重与终端失败输出保留](duplicate-tool-errors/index.md) · `duplicate-tool-errors`
+- [过期媒体标签与用户消息对齐](expired-media-alignment/index.md) · `expired-media-alignment`
+- [紧凑过期媒体标签](expired-media-tags/index.md) · `expired-media-tags`
 - [悬浮窗 NaN 崩溃修复](floating_window_nan_crash_20260917/index.md) · `floating_window_nan_crash_20260917`
+- [Gemini 空 Part 与空请求](gemini-empty-contents/index.md) · `gemini-empty-contents`
+- [Gemini 模型列表使用配置的服务地址](gemini-model-list-endpoint/index.md) · `gemini-model-list-endpoint`
 - [Gemini tool history and thinking repair](gemini_tool_history_and_thinking_repair_20260907/index.md) · `gemini_tool_history_and_thinking_repair_20260907`
+- [GitHub 工具包保留终端失败输出](github-terminal-result/index.md) · `github-terminal-result`
 - [GitHub 登录浏览器选择](github_login_browser_choice_20260801/index.md) · `github_login_browser_choice_20260801`
 - [GitHub OAuth Broker](github_oauth_broker/index.md) · `github_oauth_broker`
 - [GitHub OAuth Completion Delivery](github_oauth_completion_delivery/index.md) · `github_oauth_completion_delivery`
+- [GREP 上下文行号与 SSE 关闭异常](grep-line-numbers-sse-close/index.md) · `grep-line-numbers-sse-close`
+- [对话历史长列表滚动重叠](history-scroll-placement/index.md) · `history-scroll-placement`
+- [界面与媒体交互修复](interface-media-polish/index.md) · `interface-media-polish`
+- [多工具交错参数完整性](interleaved-tool-call-arguments/index.md) · `interleaved-tool-call-arguments`
 - [中断回合统计修复](issue-741-interrupted-turn-stats/index.md) · `issue-741-interrupted-turn-stats`
 - [Issue 853 待发送消息队列](issue-853-pending-message-queue/index.md) · `issue-853-pending-message-queue`
 - [Issue 854 Android 16 前台通知](issue-854-android16-foreground-notification/index.md) · `issue-854-android16-foreground-notification`
@@ -54,34 +57,71 @@
 - [Issue 782 Theme Runtime Snapshot](issue_782_theme_runtime_snapshot/index.md) · `issue_782_theme_runtime_snapshot`
 - [Issue 842 Gemini 思考参数传递](issue_842_gemini_thinking_config/index.md) · `issue_842_gemini_thinking_config`
 - [QuickJS 执行上下文生命周期](js_engine_lifecycle_20260801/index.md) · `js_engine_lifecycle_20260801`
+- [密钥池冷却与恢复](key-pool-cooldown-recovery/index.md) · `key-pool-cooldown-recovery`
+- [密钥池错误的实际请求范围](key-pool-error-scope/index.md) · `key-pool-error-scope`
 - [Kotlin 与 TypeScript 桥接接口对齐](kt_ts_bridge_alignment_20260809/index.md) · `kt_ts_bridge_alignment_20260809`
 - [长会话发送前性能优化](long-history-send-cost/index.md) · `long-history-send-cost`
 - [Incremental Private Publisher Projection](market_private_publisher_incremental_20260728/index.md) · `market_private_publisher_incremental_20260728`
 - [Marketplace client-version compatibility](market_version_compatibility_20260805/index.md) · `market_version_compatibility_20260805`
 - [市场版本范围下载状态](market_version_download_state/index.md) · `market_version_download_state`
-- [记忆工作台选择器与默认空间删除状态](memory-workbench-selectors/index.md)
+- [模型上下文协议手动启动与元数据兼容](mcp-manual-start/index.md) · `mcp-manual-start`
+- [模型上下文协议静默加载](mcp-silent-startup/index.md) · `mcp-silent-startup`
+- [MCP 手动启动反馈与斜杠菜单](mcp-start-feedback-slash-menu/index.md) · `mcp-start-feedback-slash-menu`
 - [记忆检索相关性与诊断（#1320）](memory-search-1320/01-relevance-and-diagnostics.md) · `memory-search-1320`
+- [记忆工作台选择器与默认空间删除状态](memory-workbench-selectors/index.md) · `memory-workbench-selectors`
+- [分块消息的连续主题气泡外壳](message-bubble-surface/index.md) · `message-bubble-surface`
+- [消息复制面板的底色与裁剪范围](message-copy-sheet-layout/index.md) · `message-copy-sheet-layout`
 - [额外信息注入并发时限](message_insert_parallel_deadline_20260808/index.md) · `message_insert_parallel_deadline_20260808`
+- [模型服务缓存与持久化配置一致性](model-service-cache-refresh/index.md) · `model-service-cache-refresh`
 - [模型配置默认启用 Tool Call](model_tool_call_default_20260807/index.md) · `model_tool_call_default_20260807`
+- [点击通知打开来源会话](notification-open-chat/index.md) · `notification-open-chat`
+- [离线扩展导入与说明修复](offline-resource-import-actions/index.md) · `offline-resource-import-actions`
+- [离线语音试听回调崩溃](offline-tts-callback/index.md) · `offline-tts-callback`
 - [工作流并发、总结与语音条内存排查](oom-workflow-audio/index.md) · `oom-workflow-audio`
 - [OpenCode provider current requirements](opencode_provider_current_requirements_20260907/index.md) · `opencode_provider_current_requirements_20260907`
 - [工具结果按调用顺序输出](ordered-tool-results/index.md) · `ordered-tool-results`
+- [已安装扩展删除](package-delete-source/index.md) · `package-delete-source`
+- [包工具 JSON 参数诊断](package-proxy-json-diagnostics/index.md) · `package-proxy-json-diagnostics`
+- [包管理四标签等宽铺满](package-tabs-full-width/index.md) · `package-tabs-full-width`
+- [增量更新分段响应校验](patch-range-validation/index.md) · `patch-range-validation`
+- [PhoneAgent 控件感知与本地连续执行](phone-agent-local-execution/index.md) · `phone-agent-local-execution`
 - [Phone Orientation Layout](phone_orientation_layout_860/index.md) · `phone_orientation_layout_860`
 - [插件页面生命周期与聊天草稿](plugin-page-lifecycle-and-drafts/index.md) · `plugin-page-lifecycle-and-drafts`
+- [请求错误细分与后台提示保留](precise-request-errors/index.md) · `precise-request-errors`
 - [断网中断消息保留修复](preserve_interrupted_ai_output_20260814/index.md) · `preserve_interrupted_ai_output_20260814`
+- [提示词编辑状态与更新下载来源适配](prompt-editing-and-update-sources/index.md) · `prompt-editing-and-update-sources`
 - [Publish Asset Source Selector](publish_asset_source_selector_20260729/index.md) · `publish_asset_source_selector_20260729`
+- [签名发行准备当前源码资源](release-offline-resource-preparation/index.md) · `release-offline-resource-preparation`
+- [移除外部 A2UI 示例引导脚本](remove-a2ui-guide/index.md) · `remove-a2ui-guide`
 - [移除内置表情与恢复默认](remove-builtin-emoji/index.md) · `remove-builtin-emoji`
 - [预编译删除思考正则](remove_thinking_regex_anr_20260913/index.md) · `remove_thinking_regex_anr_20260913`
 - [替换资源后的私有文件清理](replaced-resource-cleanup/index.md) · `replaced-resource-cleanup`
-- [总结请求的实时进度与错误提示](summary-retry-notices/index.md)
 - [请求终止错误传播与重试规则](request-error-feedback/index.md) · `request-error-feedback`
 - [重试状态与显示设置转场修复](retry-status-settings-transition/index.md) · `retry-status-settings-transition`
+- [移植 DSL 与设置页滚动状态修复](scroll-state-preservation/index.md) · `scroll-state-preservation`
+- [发送触发总结时的主线程 ANR 修复](send-summary-anr/index.md) · `send-summary-anr`
 - [设置页提醒与协议阅读显示修复](settings-display-feedback/index.md) · `settings-display-feedback`
 - [共享流异常收尾契约](shared_stream_failure_observation_20260824/index.md) · `shared_stream_failure_observation_20260824`
 - [原始快照导入自动恢复媒体引用](snapshot_media_restore/index.md) · `snapshot_media_restore`
+- [数据管理角色卡头像](storage-character-avatars/index.md) · `storage-character-avatars`
+- [流式显示 ANR 修复](stream-display-anr/index.md) · `stream-display-anr`
 - [Streaming Markdown Cache Invalidation](stream_markdown_cache_invalidation_20260729/index.md) · `stream_markdown_cache_invalidation_20260729`
+- [流式气泡停更修复](streaming-bubble-freeze/index.md) · `streaming-bubble-freeze`
+- [流式协议元数据隐藏](streaming-protocol-meta/index.md) · `streaming-protocol-meta`
+- [摘要为空时重新生成一次](summary-empty-result-retry/index.md) · `summary-empty-result-retry`
+- [历史摘要协议负载过滤](summary-protocol-meta/index.md) · `summary-protocol-meta`
+- [总结请求的实时进度与错误提示](summary-retry-notices/index.md) · `summary-retry-notices`
+- [终端状态与光标位置应答](terminal-device-status-reports/index.md) · `terminal-device-status-reports`
+- [终端命令生命周期与托管任务](terminal-managed-tasks/index.md) · `terminal-managed-tasks`
+- [终端非零退出码统一判为失败](terminal-nonzero-exit/index.md) · `terminal-nonzero-exit`
+- [终端选项菜单](terminal-overflow-menu/index.md) · `terminal-overflow-menu`
 - [终端与离线资源紧急修复](terminal-resource-hotfix/index.md) · `terminal-resource-hotfix`
 - [终端异常退出后的会话回收](terminal_session_auto_recovery_20260808/index.md) · `terminal_session_auto_recovery_20260808`
+- [补齐自定义主题多语言并统一消息名称](theme-studio-localization/index.md) · `theme-studio-localization`
+- [主题工作室记住编辑位置](theme-studio-memory/index.md) · `theme-studio-memory`
+- [修正主题属性入口与描边可见效果](theme-studio-properties/index.md) · `theme-studio-properties`
+- [文字描边输入与显示一致性](theme-text-stroke-consistency/index.md) · `theme-text-stroke-consistency`
+- [自定义主题字段导入导出](theme-transfer-custom-fields/index.md) · `theme-transfer-custom-fields`
 - [思考 token 边界](thinking-token-boundary/index.md) · `thinking-token-boundary`
 - [Third-Party Market Content Updates](third_party_market_content_updates_20260816/index.md) · `third_party_market_content_updates_20260816`
 - [Token 统计 Long 迁移](token_statistics_long_20260801/index.md) · `token_statistics_long_20260801`
@@ -91,42 +131,38 @@
 - [Token Statistics Mode And Range Linkage](token_stats_mode_range_linkage_20260822/index.md) · `token_stats_mode_range_linkage_20260822`
 - [Restore Token Statistics Migration](token_stats_restore_20260821/index.md) · `token_stats_restore_20260821`
 - [Token Statistics Success-Only Cleanup](token_stats_success_only_20260816/index.md) · `token_stats_success_only_20260816`
+- [长时间工具调用的卡片累积](tool-card-stream-growth/index.md) · `tool-card-stream-growth`
+- [工具失败说明去重](tool-error-deduplication/index.md) · `tool-error-deduplication`
+- [工具生命周期大结果内存开销修正](tool-lifecycle-result-memory/index.md) · `tool-lifecycle-result-memory`
+- [工具权限列表实时反映可用工具](tool-permission-availability/index.md) · `tool-permission-availability`
+- [工具权限列表按应用语言展示说明](tool-permission-localization/index.md) · `tool-permission-localization`
 - [工具结果正文与卡片边界](tool-result-content/index.md) · `tool-result-content`
 - [工具结果按调用独立限制](tool-result-per-call-limit_20260909/index.md) · `tool-result-per-call-limit_20260909`
 - [工具结果大字符串 OOM 定点修复](tool-result-string-oom/index.md) · `tool-result-string-oom`
+- [语音条 WebView 挂载焦点修复](toolpkg-webview-focus/index.md) · `toolpkg-webview-focus`
 - [ToolPkg toolCall dispatch repair](toolpkg_api_version_and_toolcall_repair_20260907/index.md) · `toolpkg_api_version_and_toolcall_repair_20260907`
 - [ToolPkg 引擎超时与生命周期修复](toolpkg_engine_timeout/index.md) · `toolpkg_engine_timeout`
 - [ToolPkg Hook Timeout Toast](toolpkg_hook_timeout_toast_20260807/index.md) · `toolpkg_hook_timeout_toast_20260807`
 - [ToolPkg 发布处理](toolpkg_publish_provenance_20260729/index.md) · `toolpkg_publish_provenance_20260729`
 - [未匹配工具历史修复](unmatched_tool_history_20260908/index.md) · `unmatched_tool_history_20260908`
+- [应用升级保留外置扩展安装](upgrade-package-preservation/index.md) · `upgrade-package-preservation`
+- [同步点击目标与导航结果校验](upstream-1459-browser/index.md) · `upstream-1459-browser`
+- [同步上游文档块编辑器高度限制](upstream-1459-document/index.md) · `upstream-1459-document`
+- [同步 stdio 工作目录与启动失败诊断](upstream-1459-mcp/index.md) · `upstream-1459-mcp`
+- [同步 NUL 消息读取修复并适配结构化存储](upstream-1459-nul/index.md) · `upstream-1459-nul`
+- [同步流式重试修订与 Waifu 撤回](upstream-1459-revisions/index.md) · `upstream-1459-revisions`
+- [TTS 正文核验与 A2A 协议同步](upstream-a2a-tts/index.md) · `upstream-a2a-tts`
+- [同步市场 ToolPkg API 兼容性判断](upstream-market-toolpkg-api/index.md) · `upstream-market-toolpkg-api`
+- [use_package 激活失败状态](use-package-result/index.md) · `use-package-result`
+- [提示、插件配置入口与 Waifu 首次展示](ux-stream-ui-followup/index.md) · `ux-stream-ui-followup`
 - [变体消息持久化事件修复](variant_message_persisted_event_20260908/index.md) · `variant_message_persisted_event_20260908`
+- [硅基流动音频格式、请求重试与临时错误显示](voice-input-audio-retry/index.md) · `voice-input-audio-retry`
+- [语音理解限定为忠实转写](voice-transcription-prompt/index.md) · `voice-transcription-prompt`
 - [Weather injection timeout](weather_injection_timeout_20260805/index.md) · `weather_injection_timeout_20260805`
+- [工作流失败原因与节点名称](workflow-error-details/index.md) · `workflow-error-details`
+- [工作流定时执行](workflow-scheduling/index.md) · `workflow-scheduling`
 - [工作流启动前异常状态](workflow_pre_execution_failure_status/index.md) · `workflow_pre_execution_failure_status`
 - [Workflow Runtime Initialization](workflow_runtime_init_20260731/index.md) · `workflow_runtime_init_20260731`
 - [工作流存储稳定性](workflow_storage_stability_20260828/index.md) · `workflow_storage_stability_20260828`
-- [工作流定时执行](workflow-scheduling/index.md) · `workflow-scheduling`
-
-- [包工具 JSON 参数诊断](package-proxy-json-diagnostics/index.md)
-- [A2UI 编译说明与消息投递](a2ui-generation-delivery/index.md)
-- [多工具交错参数完整性](interleaved-tool-call-arguments/index.md)
-
-- [终端非零退出码统一判为失败](terminal-nonzero-exit/index.md)
-
-- [use_package 激活失败状态](use-package-result/index.md)
-
-- [应用升级保留外置扩展安装](upgrade-package-preservation/index.md)
-
-- [GitHub 工具包保留终端失败输出](github-terminal-result/index.md)
-- [对话历史长列表滚动重叠](history-scroll-placement/index.md)
-- [移植 DSL 与设置页滚动状态修复](scroll-state-preservation/index.md)
-- [保留消息复制预览选区与滚动位置](copy-preview-state/index.md)
-- [修复浏览器 ref 点击的 WebView 线程访问](browser-ref-main-thread/index.md)
-
-- [工具失败说明去重](tool-error-deduplication/index.md)
-
-- [离线语音试听回调崩溃](offline-tts-callback/index.md)
-
-- [文字描边输入与显示一致性](theme-text-stroke-consistency/index.md)
-
-- [模型服务缓存与持久化配置一致性](model-service-cache-refresh/index.md)
-- [BLE 写入属性、MTU 分片与会话串行化](ble-write-properties-and-mtu/index.md)
+- [工作区复制内存与文件操作进度](workspace-copy-streaming-progress/index.md) · `workspace-copy-streaming-progress`
+- [世界书存储完整性修复](worldbook-storage-integrity/index.md) · `worldbook-storage-integrity`
