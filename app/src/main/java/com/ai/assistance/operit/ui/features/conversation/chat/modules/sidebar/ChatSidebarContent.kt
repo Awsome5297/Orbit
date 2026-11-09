@@ -25,15 +25,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import coil.compose.rememberAsyncImagePainter
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.character.ActivePrompt
 import com.ai.assistance.operit.data.preferences.UserPreferencesManager
 import com.ai.assistance.operit.ui.common.NavItem
-import com.ai.assistance.operit.ui.features.conversation.chat.modules.characters.CharacterSelectorPanel
+import com.ai.assistance.operit.ui.features.conversation.chat.modules.characters.CharacterSelectorContent
 import com.ai.assistance.operit.ui.features.conversation.chat.foundation.model.CharacterSelectorTarget
+import com.ai.assistance.operit.ui.components.menu.WorkbenchDropdownMenu
 import com.ai.assistance.operit.ui.features.conversation.chat.modules.history.folders.FolderChatHistoryPanel
 import com.ai.assistance.operit.ui.main.components.NavigationDrawerAppearance
 import com.ai.assistance.operit.ui.main.navigation.NavigationEntrySpec
@@ -112,6 +111,18 @@ fun ChatSidebarContent(
         onCloseSidebar = onCloseSidebar,
         bottomContent = bottomContent,
         onOpenCharacterSelector = { showCharacterSelector = true },
+        characterSelectorExpanded = showCharacterSelector,
+        onDismissCharacterSelector = { showCharacterSelector = false },
+        characterSelectorContent = {
+            CharacterSelectorContent(
+                onDismiss = { showCharacterSelector = false },
+                onSelectCharacter = onSelectCharacter,
+                onOpenCharacterSettings = {
+                    showCharacterSelector = false
+                    onOpenCharacterSettings()
+                },
+            )
+        },
         showNavigationShortcuts = showNavigationShortcuts,
         historyContent = {
             FolderChatHistoryPanel(
@@ -150,16 +161,6 @@ fun ChatSidebarContent(
             )
         },
     )
-    if (showCharacterSelector) {
-        Dialog(onDismissRequest = { showCharacterSelector = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            CharacterSelectorPanel(
-                isVisible = true,
-                onDismiss = { showCharacterSelector = false },
-                onSelectCharacter = onSelectCharacter,
-                onOpenCharacterSettings = { showCharacterSelector = false; onOpenCharacterSettings() },
-            )
-        }
-    }
 }
 
 /** 侧栏展示共用标题、快捷入口、角色行和插件布局，历史区域由调用方提供。 */
@@ -180,6 +181,9 @@ internal fun ChatSidebarBody(
     onOpenCharacterSelector: () -> Unit,
     onCloseSidebar: () -> Unit,
     bottomContent: @Composable () -> Unit,
+    characterSelectorExpanded: Boolean = false,
+    onDismissCharacterSelector: () -> Unit = {},
+    characterSelectorContent: @Composable () -> Unit = {},
     showNavigationShortcuts: Boolean = true,
     historyContent: @Composable ColumnScope.() -> Unit,
 ) {
@@ -214,23 +218,29 @@ internal fun ChatSidebarBody(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).height(44.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
-                    .clickable(role = Role.Button, onClick = onOpenCharacterSelector).padding(horizontal = 4.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (avatar.isNullOrBlank()) {
-                    Surface(Modifier.size(28.dp), shape = CircleShape, color = appearance.buttonContainerColor) {
-                        Icon(Icons.Default.Person, null, tint = textColor, modifier = Modifier.padding(5.dp))
+            Box(Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+                        .clickable(role = Role.Button, onClick = onOpenCharacterSelector).padding(horizontal = 4.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (avatar.isNullOrBlank()) {
+                        Surface(Modifier.size(28.dp), shape = CircleShape, color = appearance.buttonContainerColor) {
+                            Icon(Icons.Default.Person, null, tint = textColor, modifier = Modifier.padding(5.dp))
+                        }
+                    } else {
+                        Image(rememberAsyncImagePainter(avatar), contentDescription = null,
+                            modifier = Modifier.size(28.dp).clip(CircleShape), contentScale = ContentScale.Crop)
                     }
-                } else {
-                    Image(rememberAsyncImagePainter(avatar), contentDescription = null,
-                        modifier = Modifier.size(28.dp).clip(CircleShape), contentScale = ContentScale.Crop)
+                    Text(characterName, Modifier.weight(1f).padding(start = 8.dp),
+                        style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium,
+                        color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Icon(Icons.Default.KeyboardArrowDown, null, tint = appearance.itemColor, modifier = Modifier.size(16.dp))
                 }
-                Text(characterName, Modifier.weight(1f).padding(start = 8.dp),
-                    style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium,
-                    color = textColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Icon(Icons.Default.KeyboardArrowDown, null, tint = appearance.itemColor, modifier = Modifier.size(16.dp))
+                WorkbenchDropdownMenu(
+                    expanded = characterSelectorExpanded,
+                    onDismissRequest = onDismissCharacterSelector,
+                ) { characterSelectorContent() }
             }
             IconButton(onClick = onOpenCharacterSettings, modifier = Modifier.size(32.dp)) {
                 Icon(Icons.Default.Settings, stringResource(R.string.sidebar_character_settings),

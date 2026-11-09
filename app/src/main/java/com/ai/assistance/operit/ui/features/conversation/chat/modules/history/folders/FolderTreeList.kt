@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.ui.theme.getTextColorForBackground
+import com.ai.assistance.operit.ui.components.menu.WorkbenchDropdownMenu
 import com.ai.assistance.operit.data.chat.folders.ChatFolder
 import com.ai.assistance.operit.data.chat.folders.folderAncestors
 import com.ai.assistance.operit.data.chat.folders.ChatFolderMove
@@ -72,6 +73,15 @@ internal fun FolderTreeList(
     selectedIds: Set<String> = emptySet(),
     selectionEnabled: Boolean = true,
     deletionProgress: Map<String, Float> = emptyMap(),
+    chatMenuId: String? = null,
+    onDismissChatMenu: () -> Unit = {},
+    chatMenuContent: @Composable (ChatHistory) -> Unit = {},
+    folderMenuId: String? = null,
+    onDismissFolderMenu: () -> Unit = {},
+    folderMenuContent: @Composable (ChatFolderRow.Folder) -> Unit = {},
+    bindingMenuKey: String? = null,
+    onDismissBindingMenu: () -> Unit = {},
+    bindingMenuContent: @Composable (ChatFolderRow.Binding) -> Unit = {},
 ) {
     var dragSource by remember { mutableStateOf<ChatFolderRow?>(null) }
     var pointer by remember { mutableStateOf(Offset.Zero) }
@@ -286,15 +296,31 @@ internal fun FolderTreeList(
                                         if (row.history.locked) Icon(Icons.Default.Lock, stringResource(R.string.lock_chat), Modifier.size(14.dp), tint = rowContentColor)
                                     }
                                 }
-                                if (!selectionMode) IconButton(
-                                    onClick = {
-                                        when (row) {
-                                            is ChatFolderRow.Chat -> onChatMenu(row.history)
-                                            is ChatFolderRow.Folder -> onFolderMenu(row)
-                                            is ChatFolderRow.Binding -> onBindingCreate(row)
-                                        }
-                                    }, enabled = !deleting, modifier = Modifier.size(30.dp),
-                                ) { Icon(Icons.Default.MoreVert, stringResource(R.string.folder_actions), Modifier.size(16.dp), tint = rowContentColor.copy(alpha = 0.75f)) }
+                                if (!selectionMode) Box {
+                                    IconButton(
+                                        onClick = {
+                                            when (row) {
+                                                is ChatFolderRow.Chat -> onChatMenu(row.history)
+                                                is ChatFolderRow.Folder -> onFolderMenu(row)
+                                                is ChatFolderRow.Binding -> onBindingCreate(row)
+                                            }
+                                        }, enabled = !deleting, modifier = Modifier.size(30.dp),
+                                    ) { Icon(Icons.Default.MoreVert, stringResource(R.string.folder_actions), Modifier.size(16.dp), tint = rowContentColor.copy(alpha = 0.75f)) }
+                                    when (row) {
+                                        is ChatFolderRow.Chat -> WorkbenchDropdownMenu(
+                                            expanded = row.history.id == chatMenuId,
+                                            onDismissRequest = onDismissChatMenu,
+                                        ) { chatMenuContent(row.history) }
+                                        is ChatFolderRow.Folder -> WorkbenchDropdownMenu(
+                                            expanded = row.folder.id == folderMenuId,
+                                            onDismissRequest = onDismissFolderMenu,
+                                        ) { folderMenuContent(row) }
+                                        is ChatFolderRow.Binding -> WorkbenchDropdownMenu(
+                                            expanded = row.key == bindingMenuKey,
+                                            onDismissRequest = onDismissBindingMenu,
+                                        ) { bindingMenuContent(row) }
+                                    }
+                                }
                                 if (row.node() != null && draggingEnabled && !deleting) {
                                     var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
                                     val description = stringResource(R.string.drag_item, title)

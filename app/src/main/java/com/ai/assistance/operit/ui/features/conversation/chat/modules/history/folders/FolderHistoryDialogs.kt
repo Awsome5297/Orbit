@@ -30,26 +30,34 @@ import com.ai.assistance.operit.data.chat.folders.folderAncestors
 import com.ai.assistance.operit.data.model.ChatHistory
 import com.ai.assistance.operit.ui.features.conversation.chat.foundation.model.ChatHistoryDisplayMode
 
-internal data class HistoryAction(val label: String, val icon: ImageVector, val enabled: Boolean = true, val action: () -> Unit)
+internal data class HistoryAction(
+    val label: String,
+    val icon: ImageVector,
+    val enabled: Boolean = true,
+    val destructive: Boolean = false,
+    val action: () -> Unit,
+)
 internal data class HistoryBindingOption(val label: String, val binding: ChatFolderBinding)
 
 @Composable
-internal fun HistoryActionsDialog(title: String, actions: List<HistoryAction>, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss, title = { Text(title) },
-        text = {
-            Column(Modifier.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.6f).dp)
-                .verticalScroll(rememberScrollState())) {
-                actions.forEach { option ->
-                    TextButton(onClick = option.action, enabled = option.enabled, modifier = Modifier.fillMaxWidth()) {
-                        Icon(option.icon, null, Modifier.size(20.dp))
-                        Spacer(Modifier.width(12.dp))
-                        Text(option.label, Modifier.weight(1f))
-                    }
-                }
-            }
-        }, confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
-    )
+internal fun HistoryActionsMenuContent(actions: List<HistoryAction>, onDismiss: () -> Unit) {
+    actions.forEach { option ->
+        val color = when {
+            !option.enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            option.destructive -> MaterialTheme.colorScheme.error
+            else -> MaterialTheme.colorScheme.onSurface
+        }
+        DropdownMenuItem(
+            text = { Text(option.label, style = MaterialTheme.typography.bodyMedium) },
+            onClick = {
+                onDismiss()
+                option.action()
+            },
+            enabled = option.enabled,
+            leadingIcon = { Icon(option.icon, null, Modifier.size(18.dp), tint = color) },
+            colors = MenuDefaults.itemColors(textColor = color, leadingIconColor = color),
+        )
+    }
 }
 
 @Composable

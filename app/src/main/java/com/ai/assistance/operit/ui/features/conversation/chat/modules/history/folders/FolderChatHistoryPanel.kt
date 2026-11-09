@@ -435,7 +435,43 @@ fun FolderChatHistoryPanel(
             onBindingCreate = { bindingMenu = it }, onHoverExpand = { collapsed = collapsed - it.key },
             onMove = ::move, onInteractionChange = onQuickScrollInteractionChange, modifier = Modifier.weight(1f),
             contentColor = contentColor, selectedContainerColor = selectedContainerColor, selectedContentColor = selectedContentColor,
-            deletionProgress = deletionProgress)
+            deletionProgress = deletionProgress,
+            chatMenuId = chatMenu?.id,
+            onDismissChatMenu = { chatMenu = null },
+            chatMenuContent = { chat ->
+                HistoryActionsMenuContent(listOf(
+                    HistoryAction(stringResource(R.string.edit_title), Icons.Default.Edit) { chatEdit = chat },
+                    HistoryAction(stringResource(R.string.summarize_chat_title), Icons.Default.AutoAwesome) { onSummarizeChatTitle(chat.id) },
+                    HistoryAction(
+                        stringResource(if (chat.archived) R.string.chat_unarchive else R.string.chat_archive),
+                        if (chat.archived) Icons.Default.Restore else Icons.Default.Archive,
+                    ) { perform { manager.updateChatArchived(chat.id, !chat.archived) } },
+                    HistoryAction(stringResource(if (chat.pinned) R.string.unpin_chat else R.string.pin_chat), Icons.Default.PushPin) { perform { manager.updateChatPinned(chat.id, !chat.pinned) } },
+                    HistoryAction(stringResource(if (chat.locked) R.string.unlock_chat else R.string.lock_chat), Icons.Default.Lock) { perform { manager.updateChatLocked(chat.id, !chat.locked) } },
+                    HistoryAction(stringResource(R.string.delete), Icons.Default.Delete, enabled = !chat.locked, destructive = true) { promptDelete(chat) },
+                ), onDismiss = { chatMenu = null })
+            },
+            folderMenuId = folderMenu?.folder?.id,
+            onDismissFolderMenu = { folderMenu = null },
+            folderMenuContent = { row ->
+                val binding = if (historyDisplayMode == ChatHistoryDisplayMode.CURRENT_CHARACTER_ONLY) activeBinding
+                    else row.binding ?: ChatFolderBinding(row.folder.characterCardName, row.folder.characterGroupId)
+                HistoryActionsMenuContent(listOf(
+                    HistoryAction(stringResource(R.string.new_chat), Icons.Default.Add) { onNewChat(binding.characterCardName, binding.characterGroupId, row.folder.id) },
+                    HistoryAction(stringResource(R.string.folder_create_child), Icons.Default.CreateNewFolder) { folderEdit = FolderEditRequest(parentId = row.folder.id, binding = binding, scope = row.scope) },
+                    HistoryAction(stringResource(R.string.folder_rename), Icons.Default.Edit) { folderEdit = FolderEditRequest(row.folder, row.folder.parentId, binding, row.scope) },
+                    HistoryAction(stringResource(R.string.folder_delete), Icons.Default.Delete, destructive = true) { folderDelete = row.folder },
+                ), onDismiss = { folderMenu = null })
+            },
+            bindingMenuKey = bindingMenu?.key,
+            onDismissBindingMenu = { bindingMenu = null },
+            bindingMenuContent = { row ->
+                HistoryActionsMenuContent(listOf(
+                    HistoryAction(stringResource(R.string.new_chat), Icons.Default.Add) { onNewChat(row.binding.characterCardName, row.binding.characterGroupId, null) },
+                    HistoryAction(stringResource(R.string.folder_create), Icons.Default.CreateNewFolder) { folderEdit = FolderEditRequest(binding = row.binding, scope = row.scope) },
+                ), onDismiss = { bindingMenu = null })
+            },
+        )
     }
     batchMoveIds?.let { ids ->
         ChatBatchMoveDialog(
@@ -487,41 +523,11 @@ fun FolderChatHistoryPanel(
             folderEdit = null
         }
     }
-    folderMenu?.let { row ->
-        val binding = if (historyDisplayMode == ChatHistoryDisplayMode.CURRENT_CHARACTER_ONLY) activeBinding
-            else row.binding ?: ChatFolderBinding(row.folder.characterCardName, row.folder.characterGroupId)
-        HistoryActionsDialog(row.folder.name, listOf(
-            HistoryAction(stringResource(R.string.new_chat), Icons.Default.Add) { onNewChat(binding.characterCardName, binding.characterGroupId, row.folder.id); folderMenu = null },
-            HistoryAction(stringResource(R.string.folder_create_child), Icons.Default.CreateNewFolder) { folderEdit = FolderEditRequest(parentId = row.folder.id, binding = binding, scope = row.scope); folderMenu = null },
-            HistoryAction(stringResource(R.string.folder_rename), Icons.Default.Edit) { folderEdit = FolderEditRequest(row.folder, row.folder.parentId, binding, row.scope); folderMenu = null },
-            HistoryAction(stringResource(R.string.folder_delete), Icons.Default.Delete) { folderDelete = row.folder; folderMenu = null },
-        )) { folderMenu = null }
-    }
-    bindingMenu?.let { row ->
-        HistoryActionsDialog(row.name, listOf(
-            HistoryAction(stringResource(R.string.new_chat), Icons.Default.Add) { onNewChat(row.binding.characterCardName, row.binding.characterGroupId, null); bindingMenu = null },
-            HistoryAction(stringResource(R.string.folder_create), Icons.Default.CreateNewFolder) { folderEdit = FolderEditRequest(binding = row.binding, scope = row.scope); bindingMenu = null },
-        )) { bindingMenu = null }
-    }
     folderDelete?.let { folder ->
         AlertDialog(onDismissRequest = { folderDelete = null }, title = { Text(stringResource(R.string.folder_delete)) },
             text = { Text(stringResource(R.string.folder_delete_keep_contents, folder.name)) },
             confirmButton = { TextButton(onClick = { perform { repository.deleteKeepingContents(folder.id) }; folderDelete = null }) { Text(stringResource(R.string.delete)) } },
             dismissButton = { TextButton(onClick = { folderDelete = null }) { Text(stringResource(R.string.cancel)) } })
-    }
-    chatMenu?.let { selected ->
-        val chat = histories.firstOrNull { it.id == selected.id }
-        if (chat != null) HistoryActionsDialog(chat.title, listOf(
-            HistoryAction(stringResource(R.string.edit_title), Icons.Default.Edit) { chatEdit = chat; chatMenu = null },
-            HistoryAction(stringResource(R.string.summarize_chat_title), Icons.Default.AutoAwesome) { onSummarizeChatTitle(chat.id); chatMenu = null },
-            HistoryAction(
-                stringResource(if (chat.archived) R.string.chat_unarchive else R.string.chat_archive),
-                if (chat.archived) Icons.Default.Restore else Icons.Default.Archive,
-            ) { perform { manager.updateChatArchived(chat.id, !chat.archived) }; chatMenu = null },
-            HistoryAction(stringResource(if (chat.pinned) R.string.unpin_chat else R.string.pin_chat), Icons.Default.PushPin) { perform { manager.updateChatPinned(chat.id, !chat.pinned) }; chatMenu = null },
-            HistoryAction(stringResource(if (chat.locked) R.string.unlock_chat else R.string.lock_chat), Icons.Default.Lock) { perform { manager.updateChatLocked(chat.id, !chat.locked) }; chatMenu = null },
-            HistoryAction(stringResource(R.string.delete), Icons.Default.Delete, enabled = !chat.locked) { promptDelete(chat); chatMenu = null },
-        )) { chatMenu = null }
     }
     chatEdit?.let { chat -> HistoryChatEditDialog(chat, options, ::label, { chatEdit = null }) { title, binding ->
         onUpdateChatTitle(chat.id, title)

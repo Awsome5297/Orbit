@@ -15,6 +15,7 @@
 - [工作区、聊天归档与设置入口整理](chat-archive-and-settings-polish/index.md) · `chat-archive-and-settings-polish`
 - [对话批量管理与设置入口整理](chat-batch-and-settings/index.md) · `chat-batch-and-settings`
 - [手动继续生成](chat-continue-generation/index.md) · `chat-continue-generation`
+- [聊天页下拉菜单改造](chat-dropdown-menus/index.md) · `chat-dropdown-menus`
 - [聊天附件图片预览与应用内选择器](chat-image-picker-preview/index.md) · `chat-image-picker-preview`
 - [对话列表精简、短动画与 OKToast](chat-list-motion-and-oktoast/index.md) · `chat-list-motion-and-oktoast`
 - [聊天弹起菜单的主题形状与位置](chat-popup-theme-layout/index.md) · `chat-popup-theme-layout`

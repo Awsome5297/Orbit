@@ -69,10 +69,11 @@ private class WorkbenchMenuPositionProvider(private val margin: Int) : PopupPosi
     ): IntOffset {
         val maxX = (windowSize.width - popupContentSize.width - margin).coerceAtLeast(0)
         val maxY = (windowSize.height - popupContentSize.height - margin).coerceAtLeast(0)
-        val x = if (layoutDirection == LayoutDirection.Ltr) {
-            anchorBounds.left
-        } else {
-            anchorBounds.right - popupContentSize.width
+        val anchorCenterX = (anchorBounds.left + anchorBounds.right) / 2
+        val x = when {
+            layoutDirection == LayoutDirection.Rtl -> anchorBounds.right - popupContentSize.width
+            anchorCenterX >= windowSize.width / 2 -> anchorBounds.right - popupContentSize.width
+            else -> anchorBounds.left
         }
         val below = anchorBounds.bottom + margin
         val y = if (below + popupContentSize.height <= windowSize.height - margin) {
