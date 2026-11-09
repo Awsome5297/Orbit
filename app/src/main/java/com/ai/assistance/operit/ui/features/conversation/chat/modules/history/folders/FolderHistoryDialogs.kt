@@ -7,6 +7,7 @@ import com.ai.assistance.operit.ui.theme.script.ThemeScriptAlertDialog as AlertD
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -17,9 +18,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.chat.folders.ChatFolder
@@ -47,16 +50,28 @@ internal fun HistoryActionsMenuContent(actions: List<HistoryAction>, onDismiss: 
             option.destructive -> MaterialTheme.colorScheme.error
             else -> MaterialTheme.colorScheme.onSurface
         }
-        DropdownMenuItem(
-            text = { Text(option.label, style = MaterialTheme.typography.bodyMedium) },
-            onClick = {
-                onDismiss()
-                option.action()
-            },
-            enabled = option.enabled,
-            leadingIcon = { Icon(option.icon, null, Modifier.size(18.dp), tint = color) },
-            colors = MenuDefaults.itemColors(textColor = color, leadingIconColor = color),
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(40.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(enabled = option.enabled) {
+                    onDismiss()
+                    option.action()
+                }
+                .padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(option.icon, null, Modifier.size(16.dp), tint = color)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                option.label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = color,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 

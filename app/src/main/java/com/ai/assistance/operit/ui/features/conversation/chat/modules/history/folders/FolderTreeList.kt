@@ -310,14 +310,23 @@ internal fun FolderTreeList(
                                         is ChatFolderRow.Chat -> WorkbenchDropdownMenu(
                                             expanded = row.history.id == chatMenuId,
                                             onDismissRequest = onDismissChatMenu,
+                                            minWidth = 180.dp,
+                                            maxWidth = 220.dp,
+                                            contentPadding = 4.dp,
                                         ) { chatMenuContent(row.history) }
                                         is ChatFolderRow.Folder -> WorkbenchDropdownMenu(
                                             expanded = row.folder.id == folderMenuId,
                                             onDismissRequest = onDismissFolderMenu,
+                                            minWidth = 180.dp,
+                                            maxWidth = 220.dp,
+                                            contentPadding = 4.dp,
                                         ) { folderMenuContent(row) }
                                         is ChatFolderRow.Binding -> WorkbenchDropdownMenu(
                                             expanded = row.key == bindingMenuKey,
                                             onDismissRequest = onDismissBindingMenu,
+                                            minWidth = 180.dp,
+                                            maxWidth = 220.dp,
+                                            contentPadding = 4.dp,
                                         ) { bindingMenuContent(row) }
                                     }
                                 }

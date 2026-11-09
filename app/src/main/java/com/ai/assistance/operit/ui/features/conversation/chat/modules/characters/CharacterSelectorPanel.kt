@@ -94,35 +94,35 @@ fun CharacterSelectorContent(
         allGroups = characterGroupCardManager.getAllCharacterGroupCards()
     }
 
-    Column(Modifier.padding(16.dp)) {
+    Column(Modifier.padding(10.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp),
+                .padding(bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = context.getString(R.string.select_character),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = context.getString(R.string.character_count, allCards.size + allGroups.size),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(4.dp))
             Box {
                 IconButton(
                     onClick = { sortMenuExpanded = true },
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(28.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Sort,
                         contentDescription = context.getString(R.string.character_card_sort),
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
@@ -178,26 +178,26 @@ fun CharacterSelectorContent(
                     onOpenCharacterSettings()
                     onDismiss()
                 },
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(28.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = context.getString(R.string.edit_character_card),
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
 
         Column(
             modifier = Modifier.padding(top = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             if (allGroups.isNotEmpty()) {
                 Text(
                     text = stringResource(R.string.character_groups),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp, bottom = 2.dp)
+                    modifier = Modifier.padding(top = 1.dp, bottom = 1.dp)
                 )
                 allGroups.forEach { group ->
                     CharacterGroupItem(
@@ -215,7 +215,7 @@ fun CharacterSelectorContent(
                 text = stringResource(R.string.character_cards),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 2.dp, bottom = 2.dp)
+                modifier = Modifier.padding(top = 1.dp, bottom = 1.dp)
             )
             sortedCards.forEach { card ->
                 CharacterItem(
@@ -267,13 +267,13 @@ fun CharacterItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 头像区域
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(30.dp)
                     .clip(CircleShape)
                     .background(
                         if (avatarUri != null) Color.Transparent 
@@ -292,14 +292,14 @@ fun CharacterItem(
                     Icon(
                         Icons.Rounded.Person,
                         contentDescription = "Character Avatar",
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
                 
             }
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             
             // 角色信息
             Column(
@@ -307,7 +307,7 @@ fun CharacterItem(
             ) {
                 Text(
                     text = card.name,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = if (isSelected) MaterialTheme.colorScheme.primary 
                            else MaterialTheme.colorScheme.onSurface,
@@ -319,7 +319,7 @@ fun CharacterItem(
                     Spacer(modifier = Modifier.height(1.dp))
                     Text(
                         text = card.description,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -333,7 +333,7 @@ fun CharacterItem(
                 Icon(
                     Icons.Rounded.Check,
                     contentDescription = "Selected",
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(14.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -389,12 +389,12 @@ fun CharacterGroupItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(30.dp)
                     .clip(CircleShape)
                     .background(
                         if (displayAvatarUri != null) Color.Transparent
@@ -413,20 +413,20 @@ fun CharacterGroupItem(
                     Icon(
                         Icons.Rounded.Groups,
                         contentDescription = "Group Avatar",
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(14.dp),
                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Column(
                 modifier = Modifier.weight(1f).padding(end = if (isSelected) 4.dp else 0.dp)
             ) {
                 Text(
                     text = group.name,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -434,7 +434,7 @@ fun CharacterGroupItem(
                 )
                 Text(
                     text = stringResource(R.string.character_group_member_count, group.members.size),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -446,7 +446,7 @@ fun CharacterGroupItem(
                 Icon(
                     Icons.Rounded.Check,
                     contentDescription = "Selected",
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(14.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }

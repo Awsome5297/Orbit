@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -30,6 +31,9 @@ import androidx.compose.ui.window.PopupProperties
 internal fun WorkbenchDropdownMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
+    minWidth: Dp = 240.dp,
+    maxWidth: Dp = 320.dp,
+    contentPadding: Dp = 8.dp,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     if (!expanded) return
@@ -47,14 +51,14 @@ internal fun WorkbenchDropdownMenu(
         ),
     ) {
         Surface(
-            modifier = Modifier.widthIn(min = 240.dp, max = 320.dp).heightIn(max = maxHeight),
-            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.widthIn(min = minWidth, max = maxWidth).heightIn(max = maxHeight),
+            shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surfaceContainerLow,
             contentColor = MaterialTheme.colorScheme.onSurface,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             shadowElevation = 8.dp,
         ) {
-            Column(Modifier.verticalScroll(rememberScrollState()).padding(8.dp), content = content)
+            Column(Modifier.verticalScroll(rememberScrollState()).padding(contentPadding), content = content)
         }
     }
 }

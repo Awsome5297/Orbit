@@ -240,6 +240,9 @@ internal fun ChatSidebarBody(
                 WorkbenchDropdownMenu(
                     expanded = characterSelectorExpanded,
                     onDismissRequest = onDismissCharacterSelector,
+                    minWidth = 200.dp,
+                    maxWidth = 240.dp,
+                    contentPadding = 4.dp,
                 ) { characterSelectorContent() }
             }
             IconButton(onClick = onOpenCharacterSettings, modifier = Modifier.size(32.dp)) {
