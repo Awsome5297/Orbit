@@ -132,7 +132,7 @@ class RepositoryMigrationTest(unittest.TestCase):
             info = {"default_branch": "main", "permissions": {"push": False}}
             return SimpleNamespace(stdout=json.dumps(info))
 
-        with patch.dict("os.environ", {"GH_TOKEN": "fixture"}), patch.object(check_publish_access.subprocess, "run", side_effect=response):
+        with patch.dict("os.environ", {"GH_TOKEN": "fixture", "GITHUB_REPOSITORY": ""}), patch.object(check_publish_access.subprocess, "run", side_effect=response):
             with self.assertRaisesRegex(ValueError, RESOURCE_REPOSITORY):
                 check_publish_access.check("release")
 
