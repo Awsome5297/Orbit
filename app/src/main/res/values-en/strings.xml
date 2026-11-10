@@ -16,6 +16,14 @@
     <string name="nav_about">About</string>
     <string name="nav_packages">Packages</string>
     <string name="tool_menu">Tools</string>
+    <string name="media_creation_title">Media Creation</string>
+    <string name="media_creation_new_session">New session</string>
+    <string name="media_creation_empty">No media creation sessions yet</string>
+    <string name="media_creation_unnamed">Untitled session</string>
+    <string name="media_creation_items_count">%1$d items</string>
+    <string name="media_creation_delete_title">Delete session</string>
+    <string name="media_creation_delete_message">Delete “%1$s” and its generated results?</string>
+    <string name="media_creation_detail_pending">Session created. Image and video generation will be connected in the next phase.</string>
     <string name="nav_terminal">Terminal</string>
     <string name="nav_item_agreement">User Agreement</string>
 

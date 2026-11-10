@@ -772,6 +772,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":mediagen"))
     implementation("com.github.jelmerk:hnswlib-core:1.2.1")
     implementation(project(":terminal")) {
         // 终端保留独立编译依赖，应用只打包图标子集，避免完整扩展库产生重复类。

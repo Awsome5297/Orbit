@@ -24,6 +24,14 @@
     <string name="common_expand_more">展开更多</string>
     <string name="nav_packages">包管理</string>
     <string name="tool_menu">工具菜单</string>
+    <string name="media_creation_title">媒体创作</string>
+    <string name="media_creation_new_session">新建会话</string>
+    <string name="media_creation_empty">还没有媒体创作会话</string>
+    <string name="media_creation_unnamed">未命名会话</string>
+    <string name="media_creation_items_count">%1$d 个生成项</string>
+    <string name="media_creation_delete_title">删除会话</string>
+    <string name="media_creation_delete_message">删除“%1$s”及其生成结果？</string>
+    <string name="media_creation_detail_pending">会话已创建。图片与视频生成将在下一阶段接入。</string>
     <string name="nav_memory_base">记忆库</string>
     <string name="nav_terminal">终端</string>
     <string name="nav_item_agreement">用户协议</string>

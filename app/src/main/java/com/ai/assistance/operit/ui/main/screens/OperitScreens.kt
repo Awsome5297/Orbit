@@ -37,6 +37,8 @@ import com.ai.assistance.operit.ui.features.conversation.memory.screens.MemoryOv
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.MarketHomeTab
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.PackageManagerScreen
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.PackageDetailEntryScreen
+import com.ai.assistance.operit.ui.features.media.MediaCreationScreen
+import com.ai.assistance.operit.ui.features.media.MediaCreationSessionsScreen
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.ArtifactPublishScreen
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.RepoMarketPublishScreen
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.UnifiedMarketManageScreen
@@ -227,6 +229,39 @@ sealed class Screen(
                     navigateTo(PackageDetail(packageName, title))
                 }
             )
+        }
+    }
+
+    data object MediaCreationSessions : Screen(titleRes = R.string.media_creation_title) {
+        @Composable
+        override fun Content(
+            navController: NavController,
+            navigateTo: ScreenNavigationHandler,
+            onGoBack: () -> Unit,
+            hasBackgroundImage: Boolean,
+            onLoading: (Boolean) -> Unit,
+            onError: (String) -> Unit,
+            onGestureConsumed: (Boolean) -> Unit
+        ) {
+            MediaCreationSessionsScreen(
+                onOpenSession = { sessionId -> navigateTo(MediaCreation(sessionId)) },
+                onBack = onGoBack,
+            )
+        }
+    }
+
+    data class MediaCreation(val sessionId: String) : Screen(titleRes = R.string.media_creation_title) {
+        @Composable
+        override fun Content(
+            navController: NavController,
+            navigateTo: ScreenNavigationHandler,
+            onGoBack: () -> Unit,
+            hasBackgroundImage: Boolean,
+            onLoading: (Boolean) -> Unit,
+            onError: (String) -> Unit,
+            onGestureConsumed: (Boolean) -> Unit
+        ) {
+            MediaCreationScreen(sessionId = sessionId, onBack = onGoBack)
         }
     }
 

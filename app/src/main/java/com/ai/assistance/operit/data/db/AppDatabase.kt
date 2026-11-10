@@ -1,6 +1,11 @@
 package com.ai.assistance.operit.data.db
 
+import com.ai.assistance.operit.data.dao.MediaCreationDao
 import com.ai.assistance.operit.data.dao.MessageTranslationDao
+import com.ai.assistance.operit.data.model.MediaCreationNodeEntity
+import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
+import com.ai.assistance.operit.data.model.MediaCreationRecordEntity
+import com.ai.assistance.operit.data.model.MediaCreationSessionEntity
 import com.ai.assistance.operit.data.model.MessageTranslationEntity
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -27,7 +32,7 @@ import com.ai.assistance.operit.util.logging.AppLogger
 import java.io.File
 import java.util.UUID
 
-private const val APP_DATABASE_VERSION = 29
+private const val APP_DATABASE_VERSION = 30
 
 /** 应用数据库，包含聊天表和消息表 */
 @Database(
@@ -40,6 +45,10 @@ private const val APP_DATABASE_VERSION = 29
         TokenUsageRecordEntity::class,
         TokenStatsModelEntity::class,
         ApiKeyAttemptRecordEntity::class,
+        MediaCreationSessionEntity::class,
+        MediaCreationNodeEntity::class,
+        MediaCreationRecordEntity::class,
+        MediaCreationOutputEntity::class,
     ],
     version = APP_DATABASE_VERSION,
     exportSchema = false
@@ -56,6 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun chatContentDao(): ChatContentDao
     abstract fun tokenUsageDao(): TokenUsageDao
     abstract fun apiKeyAttemptDao(): ApiKeyAttemptDao
+    abstract fun mediaCreationDao(): MediaCreationDao
 
     companion object {
         const val DATABASE_VERSION = APP_DATABASE_VERSION
@@ -65,6 +75,85 @@ abstract class AppDatabase : RoomDatabase() {
 
         internal val MIGRATION_27_28 = com.ai.assistance.operit.data.chat.archive.ChatArchiveMigration
         internal val MIGRATION_28_29 = com.ai.assistance.operit.data.chat.usage.ChatTokenUsageMigration
+
+        internal val MIGRATION_29_30 =
+            object : Migration(29, 30) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL(
+                        """
+                            CREATE TABLE IF NOT EXISTS `media_creation_sessions` (
+                                `id` TEXT NOT NULL,
+                                `title` TEXT NOT NULL,
+                                `draftJson` TEXT NOT NULL,
+                                `createdAt` INTEGER NOT NULL,
+                                `updatedAt` INTEGER NOT NULL,
+                                `nodeCount` INTEGER NOT NULL,
+                                `activeCount` INTEGER NOT NULL,
+                                `coverPath` TEXT,
+                                PRIMARY KEY(`id`)
+                            )
+                        """.trimIndent()
+                    )
+                    db.execSQL(
+                        """
+                            CREATE TABLE IF NOT EXISTS `media_creation_nodes` (
+                                `id` TEXT NOT NULL,
+                                `sessionId` TEXT NOT NULL,
+                                `createdAt` INTEGER NOT NULL,
+                                `orderIndex` INTEGER NOT NULL,
+                                PRIMARY KEY(`id`),
+                                FOREIGN KEY(`sessionId`) REFERENCES `media_creation_sessions`(`id`) ON DELETE CASCADE
+                            )
+                        """.trimIndent()
+                    )
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_media_creation_nodes_sessionId` ON `media_creation_nodes` (`sessionId`)")
+                    db.execSQL(
+                        """
+                            CREATE TABLE IF NOT EXISTS `media_creation_records` (
+                                `id` TEXT NOT NULL,
+                                `sessionId` TEXT NOT NULL,
+                                `nodeId` TEXT NOT NULL,
+                                `providerId` TEXT NOT NULL,
+                                `providerName` TEXT NOT NULL,
+                                `modelId` TEXT NOT NULL,
+                                `kind` TEXT NOT NULL,
+                                `prompt` TEXT NOT NULL,
+                                `paramsJson` TEXT NOT NULL,
+                                `inputsJson` TEXT NOT NULL,
+                                `status` TEXT NOT NULL,
+                                `taskId` TEXT,
+                                `error` TEXT,
+                                `createdAt` INTEGER NOT NULL,
+                                `updatedAt` INTEGER NOT NULL,
+                                PRIMARY KEY(`id`),
+                                FOREIGN KEY(`sessionId`) REFERENCES `media_creation_sessions`(`id`) ON DELETE CASCADE,
+                                FOREIGN KEY(`nodeId`) REFERENCES `media_creation_nodes`(`id`) ON DELETE CASCADE
+                            )
+                        """.trimIndent()
+                    )
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_media_creation_records_sessionId` ON `media_creation_records` (`sessionId`)")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_media_creation_records_nodeId` ON `media_creation_records` (`nodeId`)")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_media_creation_records_status` ON `media_creation_records` (`status`)")
+                    db.execSQL(
+                        """
+                            CREATE TABLE IF NOT EXISTS `media_creation_outputs` (
+                                `id` TEXT NOT NULL,
+                                `recordId` TEXT NOT NULL,
+                                `path` TEXT NOT NULL,
+                                `mimeType` TEXT NOT NULL,
+                                `width` INTEGER,
+                                `height` INTEGER,
+                                `durationSeconds` REAL,
+                                `posterPath` TEXT,
+                                `lastFramePath` TEXT,
+                                PRIMARY KEY(`id`),
+                                FOREIGN KEY(`recordId`) REFERENCES `media_creation_records`(`id`) ON DELETE CASCADE
+                            )
+                        """.trimIndent()
+                    )
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_media_creation_outputs_recordId` ON `media_creation_outputs` (`recordId`)")
+                }
+            }
 
         /** v26 → v27：新增消息翻译缓存，保留已有聊天及统计数据。 */
         internal val MIGRATION_26_27 =
@@ -708,7 +797,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_25_26,
                     MIGRATION_26_27,
                     MIGRATION_27_28,
-                    MIGRATION_28_29
+                    MIGRATION_28_29,
+                    MIGRATION_29_30
                 )
                 .build()
 

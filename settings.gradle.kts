@@ -26,6 +26,7 @@ include(":llama")
 project(":llama").projectDir = file("llm/llama")
 include(":showerclient")
 include(":quickjs")
+include(":mediagen")
 
 include(":a2ui-compat")
 

@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -185,7 +186,9 @@ fun DrawerContent(
                 }
             } },
             bottomContent = {
-                DrawerBottomShortcutRow(selectedItem, appearance, handleNavItemClick)
+                DrawerBottomShortcutRow(selectedItem, appearance, handleNavItemClick) {
+                    handleScreenSelection(Screen.MediaCreationSessions)
+                }
             },
         )
 }
@@ -355,7 +358,8 @@ fun CollapsedDrawerContent(
 private fun DrawerBottomShortcutRow(
         selectedItem: NavItem?,
         appearance: NavigationDrawerAppearance,
-        onNavItemClick: (NavItem) -> Unit
+        onNavItemClick: (NavItem) -> Unit,
+        onOpenMediaCreation: () -> Unit,
 ) {
         val context = LocalContext.current
         val preferences = remember(context) { UserPreferencesManager.getInstance(context) }
@@ -391,6 +395,10 @@ private fun DrawerBottomShortcutRow(
                                 ToolMenuItem(NavItem.Workflow.icon, stringResource(NavItem.Workflow.titleResId)) {
                                         toolMenuExpanded = false
                                         onNavItemClick(NavItem.Workflow)
+                                }
+                                ToolMenuItem(Icons.Default.Palette, stringResource(R.string.media_creation_title)) {
+                                        toolMenuExpanded = false
+                                        onOpenMediaCreation()
                                 }
                         }
                 }
