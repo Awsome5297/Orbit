@@ -1,6 +1,9 @@
 package com.ai.assistance.operit.ui.features.media
 
+import android.content.Context
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +20,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -53,11 +58,15 @@ import coil.compose.AsyncImage
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
+import com.ai.assistance.mediagen.model.ImageRole
+import com.ai.assistance.mediagen.model.MediaGenerationInput
 import com.ai.assistance.mediagen.model.MediaGenerationModel
 import com.ai.assistance.mediagen.model.MediaGenerationRequest
 import com.ai.assistance.mediagen.model.MediaGenerationStatus
+import com.ai.assistance.mediagen.model.MediaInputKind
 import com.ai.assistance.mediagen.model.MediaKind
 import com.ai.assistance.mediagen.provider.MediaGenerationManager
+import com.ai.assistance.mediagen.provider.capabilities
 import com.ai.assistance.mediagen.provider.MediaGenerationProviderSetting
 import com.ai.assistance.mediagen.provider.providers.aliyun.AliyunMediaGenerationProvider
 import com.ai.assistance.mediagen.provider.providers.minimax.MiniMaxMediaGenerationProvider
@@ -70,7 +79,9 @@ import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
 import com.ai.assistance.operit.data.model.MediaCreationRecordEntity
 import com.ai.assistance.operit.data.preferences.MediaGenerationPreferences
 import com.ai.assistance.operit.data.preferences.MediaGenerationSettings
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Headers.Companion.toHeaders
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -117,6 +128,23 @@ fun MediaCreationScreen(
     var prompt by remember { mutableStateOf("") }
     var generating by remember { mutableStateOf(false) }
     var modelMenuExpanded by remember { mutableStateOf(false) }
+    var roleMenuExpanded by remember { mutableStateOf(false) }
+    var inputRole by remember { mutableStateOf(ImageRole.REFERENCE) }
+    var selectedInputs by remember { mutableStateOf<List<MediaGenerationInput>>(emptyList()) }
+    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            val mimeType = context.contentResolver.getType(uri)
+            scope.launch {
+                val path = withContext(Dispatchers.IO) { copyToCache(context, uri) }
+                selectedInputs = selectedInputs + MediaGenerationInput(
+                    kind = MediaInputKind.IMAGE,
+                    role = inputRole,
+                    filePath = path,
+                    mimeType = mimeType,
+                )
+            }
+        }
+    }
 
     LaunchedEffect(generationModels) {
         if (selected == null || generationModels.none { it.first.id == selected?.first?.id && it.second.id == selected?.second?.id }) {
@@ -136,11 +164,13 @@ fun MediaCreationScreen(
     val selectedModelLabel = selected?.second?.let { model ->
         if (model.displayName.isBlank()) model.modelId else model.displayName
     } ?: stringResource(R.string.media_creation_model)
+    val selectedCapabilities = selected?.let { (provider, model) -> provider.capabilities(model.kind) }
+    val requiresRemote = selectedCapabilities?.requiresRemoteInputs == true && selectedInputs.isNotEmpty()
 
     fun generate() {
         val selection = selected ?: return
         val text = prompt.trim()
-        if (text.isEmpty() || generating) return
+        if (text.isEmpty() || generating || requiresRemote) return
         generating = true
         scope.launch {
             val recordId = repository.createRecord(
@@ -155,7 +185,7 @@ fun MediaCreationScreen(
                 manager.generate(
                     setting = selection.first,
                     model = selection.second,
-                    request = MediaGenerationRequest(prompt = text, count = 1),
+                    request = MediaGenerationRequest(prompt = text, count = 1, inputs = selectedInputs),
                 ).collect { task ->
                     repository.finishRecord(recordId, task.status.name, task.id, task.error)
                     if (task.status == MediaGenerationStatus.SUCCEEDED) {
@@ -234,6 +264,52 @@ fun MediaCreationScreen(
                                 }
                             }
                         }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box {
+                                TextButton(onClick = { roleMenuExpanded = true }) {
+                                    Text(roleLabel(inputRole))
+                                }
+                                DropdownMenu(expanded = roleMenuExpanded, onDismissRequest = { roleMenuExpanded = false }) {
+                                    ImageRole.entries.forEach { role ->
+                                        DropdownMenuItem(
+                                            text = { Text(roleLabel(role)) },
+                                            onClick = {
+                                                inputRole = role
+                                                roleMenuExpanded = false
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.weight(1f))
+                            TextButton(onClick = { pickMedia.launch("image/*") }) {
+                                Icon(Icons.Default.Add, contentDescription = null)
+                                Text(stringResource(R.string.media_creation_add_image))
+                            }
+                        }
+                        selectedInputs.forEachIndexed { index, input ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(roleLabel(input.role), style = MaterialTheme.typography.labelSmall)
+                                Text(
+                                    File(input.filePath.orEmpty()).name,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                                    maxLines = 1,
+                                )
+                                IconButton(onClick = {
+                                    selectedInputs = selectedInputs.filterIndexed { i, _ -> i != index }
+                                }) {
+                                    Icon(Icons.Default.Close, contentDescription = null)
+                                }
+                            }
+                        }
+                        if (requiresRemote) {
+                            Text(
+                                stringResource(R.string.media_creation_requires_remote),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                         OutlinedTextField(
                             value = prompt,
                             onValueChange = { prompt = it },
@@ -242,7 +318,11 @@ fun MediaCreationScreen(
                             minLines = 1,
                             maxLines = 4,
                         )
-                        Button(onClick = ::generate, enabled = prompt.isNotBlank() && selected != null && !generating, modifier = Modifier.fillMaxWidth()) {
+                        Button(
+                            onClick = ::generate,
+                            enabled = prompt.isNotBlank() && selected != null && !generating && !requiresRemote,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
                             Text(
                                 if (generating) stringResource(R.string.media_creation_generating)
                                 else stringResource(R.string.media_creation_generate)
@@ -326,6 +406,26 @@ private fun MediaCreationRecordCard(
             }
         }
     }
+}
+
+@Composable
+private fun roleLabel(role: ImageRole): String = stringResource(
+    when (role) {
+        ImageRole.REFERENCE -> R.string.media_creation_role_reference
+        ImageRole.FIRST_FRAME -> R.string.media_creation_role_first_frame
+        ImageRole.LAST_FRAME -> R.string.media_creation_role_last_frame
+    }
+)
+
+private fun copyToCache(context: Context, uri: Uri): String {
+    val file = File(context.cacheDir, "media_input_${UUID.randomUUID()}")
+    val input = requireNotNull(context.contentResolver.openInputStream(uri)) {
+        "Unable to open selected media"
+    }
+    input.use { source ->
+        file.outputStream().use { target -> source.copyTo(target) }
+    }
+    return file.absolutePath
 }
 
 @Composable

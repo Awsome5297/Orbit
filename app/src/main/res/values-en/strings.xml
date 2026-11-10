@@ -29,6 +29,11 @@
     <string name="media_creation_model">Model</string>
     <string name="media_creation_no_provider">Configure a media generation service in Settings first</string>
     <string name="media_creation_open_settings">Open settings</string>
+    <string name="media_creation_add_image">Add media</string>
+    <string name="media_creation_role_reference">Reference</string>
+    <string name="media_creation_role_first_frame">First frame</string>
+    <string name="media_creation_role_last_frame">Last frame</string>
+    <string name="media_creation_requires_remote">This provider requires public media URLs; local reference media is not supported yet</string>
     <string name="settings_media_generation">Media generation services</string>
     <string name="settings_media_generation_subtitle">Configure image and video generation providers</string>
     <string name="media_generation_add_provider">Add provider</string>
