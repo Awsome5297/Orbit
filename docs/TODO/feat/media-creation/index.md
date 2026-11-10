@@ -69,6 +69,25 @@ For_Agent: 媒体创作完整对齐的分阶段实施记录
 - [ ] 生成结果备份与恢复。
 - [ ] 供应商请求映射单测与完整文档。
 
+## 阶段 7：界面重构（进行中）
+
+参照 rikkahub 的 Material 3 Expressive 结构重做媒体创作三页，同时修正外层与页面内顶栏重复的问题。
+
+- [x] 媒体路由隐藏外层 `AppContent` 顶栏，页面只保留一条自带顶栏。
+- [x] 会话列表改为大标题、异形封面、生成中状态、改名/删除菜单。
+- [x] 创作页改为时间线结果卡与悬浮输入区，补齐素材缩略图、状态、保存/分享/重试。
+- [x] 服务设置改为供应商列表与详情页，模型改为结构化编辑。
+- [x] 数据层刷新会话封面与活动任务数。
+- [ ] 单元测试、`assembleDebug` 与分支推送。
+
+以下交互作为后续增量，不在本次界面重构内：版本切换、多选批量保存/删除、供应商拖动排序、连接测试与素材存储分页。
+
+### 设计约束
+
+- 当前 Material3 版本为 1.4.0，`LargeFlexibleTopAppBar` 可用；`MaterialShapes`、`ContainedLoadingIndicator`、`HorizontalFloatingToolbar` 用自绘组件替代。
+- 结果缩略图沿用紧凑上限，点击后全屏预览。
+- 只参考 rikkahub 的布局与交互，不复制 AGPL 源码。
+
 ## 验证
 
 - `./gradlew :app:compileDebugKotlin`

@@ -144,6 +144,14 @@ private enum class ScreenVisibility {
     HIDDEN
 }
 
+// 这些页面在自己的 Scaffold 里绘制顶栏；外层再画一条会出现重复标题和返回。
+private fun Screen.rendersOwnTopBar(): Boolean =
+    this is Screen.AiChat ||
+        this is Screen.GlobalDisplaySettings ||
+        this is Screen.MediaCreationSessions ||
+        this is Screen.MediaCreation ||
+        this is Screen.MediaGenerationSettings
+
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -255,7 +263,7 @@ fun AppContent(
         Scaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             topBar = {
-                if (currentScreen !is Screen.AiChat && currentScreen !is Screen.GlobalDisplaySettings) {
+                if (!currentScreen.rendersOwnTopBar()) {
                     // 单一工具栏 - 使用小型化的设计
                     // 使用 windowInsets 参数让 TopAppBar 自己处理状态栏的 insets
                     TopAppBar(

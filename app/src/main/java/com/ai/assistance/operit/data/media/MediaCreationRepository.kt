@@ -6,8 +6,11 @@ import com.ai.assistance.operit.data.model.MediaCreationNodeEntity
 import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
 import com.ai.assistance.operit.data.model.MediaCreationRecordEntity
 import com.ai.assistance.operit.data.model.MediaCreationSessionEntity
+import com.ai.assistance.mediagen.model.MediaGenerationInput
 import com.ai.assistance.mediagen.model.MediaKind
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.UUID
 
@@ -25,6 +28,7 @@ class MediaCreationRepository private constructor(context: Context) {
 
     private val dao = AppDatabase.getDatabase(context).mediaCreationDao()
     private val files = MediaCreationFiles(context)
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
     fun observeSessions(): Flow<List<MediaCreationSessionEntity>> = dao.observeSessions()
 
@@ -71,6 +75,7 @@ class MediaCreationRepository private constructor(context: Context) {
         modelId: String,
         kind: MediaKind,
         prompt: String,
+        inputs: List<MediaGenerationInput> = emptyList(),
         nodeId: String = UUID.randomUUID().toString(),
     ): String {
         val now = System.currentTimeMillis()
@@ -94,7 +99,7 @@ class MediaCreationRepository private constructor(context: Context) {
                 kind = kind.name,
                 prompt = prompt,
                 paramsJson = "{}",
-                inputsJson = "[]",
+                inputsJson = json.encodeToString(inputs),
                 status = "PREPARING",
                 createdAt = now,
                 updatedAt = now,
@@ -116,6 +121,9 @@ class MediaCreationRepository private constructor(context: Context) {
         error: String? = null,
     ) {
         dao.updateRecordStatus(recordId, status, taskId, error, System.currentTimeMillis())
+        dao.getRecord(recordId)?.let { record ->
+            dao.updateSessionCounts(record.sessionId, System.currentTimeMillis())
+        }
     }
 
     suspend fun saveOutput(
@@ -125,6 +133,7 @@ class MediaCreationRepository private constructor(context: Context) {
     ) {
         dao.insertOutput(output)
         files.recordDir(sessionId, recordId)
+        dao.updateSessionCounts(sessionId, System.currentTimeMillis())
     }
 
     fun recordDir(sessionId: String, recordId: String): File =
@@ -133,7 +142,11 @@ class MediaCreationRepository private constructor(context: Context) {
     suspend fun getRecord(recordId: String): MediaCreationRecordEntity? = dao.getRecord(recordId)
 
     suspend fun deleteRecord(sessionId: String, recordId: String) {
+        val record = dao.getRecord(recordId) ?: return
         dao.deleteRecord(recordId)
+        if (dao.countRecordsForNode(record.nodeId) == 0) {
+            dao.deleteNodes(listOf(record.nodeId))
+        }
         files.deleteRecord(sessionId, recordId)
         dao.updateSessionCounts(sessionId, System.currentTimeMillis())
     }

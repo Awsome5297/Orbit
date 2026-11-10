@@ -45,6 +45,9 @@ interface MediaCreationDao {
     @Query("SELECT * FROM media_creation_records WHERE nodeId = :nodeId ORDER BY createdAt ASC")
     fun observeNodeRecords(nodeId: String): Flow<List<MediaCreationRecordEntity>>
 
+    @Query("SELECT COUNT(*) FROM media_creation_records WHERE nodeId = :nodeId")
+    suspend fun countRecordsForNode(nodeId: String): Int
+
     @Query("SELECT * FROM media_creation_records WHERE status IN ('PREPARING', 'QUEUED', 'RUNNING', 'DOWNLOADING')")
     suspend fun getActiveRecords(): List<MediaCreationRecordEntity>
 
@@ -69,7 +72,24 @@ interface MediaCreationDao {
     suspend fun deleteRecord(recordId: String)
 
     @Query(
-        "UPDATE media_creation_sessions SET nodeCount = (SELECT COUNT(*) FROM media_creation_nodes WHERE sessionId = :sessionId), updatedAt = :updatedAt WHERE id = :sessionId"
+        """
+        UPDATE media_creation_sessions SET
+            nodeCount = (SELECT COUNT(*) FROM media_creation_nodes WHERE sessionId = :sessionId),
+            activeCount = (
+                SELECT COUNT(*) FROM media_creation_records
+                WHERE sessionId = :sessionId
+                  AND status IN ('PREPARING', 'QUEUED', 'RUNNING', 'DOWNLOADING')
+            ),
+            coverPath = (
+                SELECT o.path FROM media_creation_outputs o
+                INNER JOIN media_creation_records r ON r.id = o.recordId
+                WHERE r.sessionId = :sessionId
+                ORDER BY r.createdAt DESC, o.id ASC
+                LIMIT 1
+            ),
+            updatedAt = :updatedAt
+        WHERE id = :sessionId
+        """
     )
     suspend fun updateSessionCounts(sessionId: String, updatedAt: Long)
 
