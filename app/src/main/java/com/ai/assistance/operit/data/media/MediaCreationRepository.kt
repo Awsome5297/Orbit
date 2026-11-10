@@ -68,6 +68,9 @@ class MediaCreationRepository private constructor(context: Context) {
     fun observeOutputs(recordId: String): Flow<List<MediaCreationOutputEntity>> =
         dao.observeOutputs(recordId)
 
+    fun observeRecentOutputs(sessionId: String): Flow<List<MediaCreationOutputEntity>> =
+        dao.observeRecentOutputs(sessionId)
+
     suspend fun createRecord(
         sessionId: String,
         providerId: String,

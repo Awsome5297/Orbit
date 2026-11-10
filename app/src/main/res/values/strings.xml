@@ -38,6 +38,13 @@
     <string name="media_creation_no_provider">请先在设置中配置媒体生成服务</string>
     <string name="media_creation_open_settings">打开设置</string>
     <string name="media_creation_add_image">添加素材</string>
+    <string name="media_creation_add_reference">添加参考素材</string>
+    <string name="media_creation_gallery_image">相册图片</string>
+    <string name="media_creation_sketch">草图</string>
+    <string name="media_creation_recent_outputs">最近生成</string>
+    <string name="media_creation_recent_outputs_empty">还没有最近生成</string>
+    <string name="media_creation_sketch_undo">撤销</string>
+    <string name="media_creation_sketch_clear">清空</string>
     <string name="media_creation_role_reference">参考图</string>
     <string name="media_creation_role_first_frame">首帧</string>
     <string name="media_creation_role_last_frame">尾帧</string>
@@ -72,6 +79,8 @@
     <string name="media_creation_remove_input">移除素材</string>
     <string name="media_creation_select_model">选择模型</string>
     <string name="media_creation_saved">已保存到相册</string>
+    <string name="media_creation_saved_count">已保存 %1$d 张到相册</string>
+    <string name="media_creation_saved_partial">已保存 %1$d 张，%2$d 张失败</string>
     <string name="media_creation_save_failed">保存失败</string>
     <string name="media_creation_share_failed">分享失败</string>
     <string name="media_creation_no_provider_title">还没有可用的生成服务</string>

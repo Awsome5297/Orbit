@@ -1,8 +1,11 @@
 package com.ai.assistance.operit.ui.features.media
 
+import android.content.Context
 import android.net.Uri
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,9 +27,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -33,6 +41,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Image
@@ -53,6 +62,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -137,6 +147,7 @@ fun MediaCreationScreen(
     val settings by preferences.settingsFlow.collectAsState(initial = MediaGenerationSettings())
     val session by repository.observeSession(sessionId).collectAsState(initial = null)
     val records by repository.observeRecords(sessionId).collectAsState(initial = emptyList())
+    val recentOutputs by repository.observeRecentOutputs(sessionId).collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val isCurrentScreen = LocalIsCurrentScreen.current
@@ -178,8 +189,25 @@ fun MediaCreationScreen(
     var deleteTarget by remember { mutableStateOf<MediaCreationRecordEntity?>(null) }
     var showModelPicker by remember { mutableStateOf(false) }
     var showParams by remember { mutableStateOf(false) }
+    var showAssetPicker by remember { mutableStateOf(false) }
+    var showSketch by remember { mutableStateOf(false) }
+    var selectedInputs by remember { mutableStateOf<List<MediaGenerationInput>>(emptyList()) }
     var resolution by remember { mutableStateOf<String?>(null) }
     var count by remember { mutableStateOf<Int?>(null) }
+
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val path = withContext(Dispatchers.IO) { copyToCache(context, uri) }
+                selectedInputs = selectedInputs + MediaGenerationInput(
+                    kind = MediaInputKind.IMAGE,
+                    role = ImageRole.REFERENCE,
+                    filePath = path,
+                    mimeType = context.contentResolver.getType(uri),
+                )
+            }
+        }
+    }
 
     LaunchedEffect(generationModels) {
         if (selected == null || generationModels.none {
@@ -259,7 +287,7 @@ fun MediaCreationScreen(
 
     fun generate() {
         val selection = selected ?: return
-        startGeneration(selection.first, selection.second, prompt.trim(), emptyList())
+        startGeneration(selection.first, selection.second, prompt.trim(), selectedInputs)
     }
 
     fun regenerate(record: MediaCreationRecordEntity) {
@@ -283,6 +311,8 @@ fun MediaCreationScreen(
         session?.title.isNullOrBlank() -> stringResource(R.string.media_creation_unnamed)
         else -> session?.title.orEmpty()
     }
+    val selectedCapabilities = selected?.let { (provider, model) -> provider.capabilities(model.kind) }
+    val requiresRemote = selectedCapabilities?.requiresRemoteInputs == true && selectedInputs.isNotEmpty()
     Scaffold(
         topBar = {
             MediaTopBar(
@@ -299,10 +329,15 @@ fun MediaCreationScreen(
             if (generationModels.isNotEmpty()) {
                 MediaComposer(
                     selected = selected,
+                    inputs = selectedInputs,
                     prompt = prompt,
                     onPromptChange = { prompt = it },
                     generating = generating,
-                    paramsSummary = paramsSummary(resolution, count),
+                    requiresRemote = requiresRemote,
+                    onOpenAssets = { showAssetPicker = true },
+                    onRemoveInput = { input ->
+                        selectedInputs = selectedInputs.filterNot { it == input }
+                    },
                     onOpenModelPicker = { showModelPicker = true },
                     onOpenParams = { showParams = true },
                     onGenerate = ::generate,
@@ -387,6 +422,45 @@ fun MediaCreationScreen(
         )
     }
 
+    if (showAssetPicker) {
+        AssetPickerSheet(
+            recentOutputs = recentOutputs,
+            onPickGallery = {
+                showAssetPicker = false
+                pickImage.launch("image/*")
+            },
+            onSketch = {
+                showAssetPicker = false
+                showSketch = true
+            },
+            onSelect = { output ->
+                selectedInputs = selectedInputs + MediaGenerationInput(
+                    kind = if (mediaMimeIsVideo(output.mimeType)) MediaInputKind.VIDEO else MediaInputKind.IMAGE,
+                    role = ImageRole.REFERENCE,
+                    filePath = output.path,
+                    mimeType = output.mimeType,
+                )
+                showAssetPicker = false
+            },
+            onDismiss = { showAssetPicker = false },
+        )
+    }
+
+    if (showSketch) {
+        MediaSketchDialog(
+            onDismiss = { showSketch = false },
+            onSave = { file ->
+                selectedInputs = selectedInputs + MediaGenerationInput(
+                    kind = MediaInputKind.IMAGE,
+                    role = ImageRole.REFERENCE,
+                    filePath = file.absolutePath,
+                    mimeType = "image/png",
+                )
+                showSketch = false
+            },
+        )
+    }
+
     preview?.let { target ->
         MediaPreviewDialog(target = target, onDismiss = { preview = null })
     }
@@ -416,10 +490,13 @@ fun MediaCreationScreen(
 @Composable
 private fun MediaComposer(
     selected: Pair<MediaGenerationProviderSetting, MediaGenerationModel>?,
+    inputs: List<MediaGenerationInput>,
     prompt: String,
     onPromptChange: (String) -> Unit,
     generating: Boolean,
-    paramsSummary: String,
+    requiresRemote: Boolean,
+    onOpenAssets: () -> Unit,
+    onRemoveInput: (MediaGenerationInput) -> Unit,
     onOpenModelPicker: () -> Unit,
     onOpenParams: () -> Unit,
     onGenerate: () -> Unit,
@@ -436,6 +513,19 @@ private fun MediaComposer(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
+            if (inputs.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    inputs.forEach { input ->
+                        InputTile(input = input, onRemove = { onRemoveInput(input) })
+                    }
+                }
+            }
             OutlinedTextField(
                 value = prompt,
                 onValueChange = onPromptChange,
@@ -444,6 +534,11 @@ private fun MediaComposer(
                 minLines = 1,
                 maxLines = 4,
                 shape = RoundedCornerShape(22.dp),
+                leadingIcon = {
+                    IconButton(onClick = onOpenAssets) {
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.media_creation_add_reference))
+                    }
+                },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -451,6 +546,14 @@ private fun MediaComposer(
                     unfocusedIndicatorColor = Color.Transparent,
                 ),
             )
+            if (requiresRemote) {
+                Text(
+                    text = stringResource(R.string.media_creation_requires_remote),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -470,7 +573,7 @@ private fun MediaComposer(
                 }
                 AssistChip(
                     onClick = onOpenParams,
-                    label = { Text(paramsSummary) },
+                    label = { Text(stringResource(R.string.media_creation_params)) },
                     leadingIcon = {
                         Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(16.dp))
                     },
@@ -478,7 +581,7 @@ private fun MediaComposer(
                 Spacer(Modifier.weight(1f))
                 FilledIconButton(
                     onClick = onGenerate,
-                    enabled = prompt.isNotBlank() && !generating,
+                    enabled = prompt.isNotBlank() && !generating && !requiresRemote,
                     modifier = Modifier.size(48.dp),
                 ) {
                     Icon(
@@ -489,6 +592,115 @@ private fun MediaComposer(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AssetPickerSheet(
+    recentOutputs: List<MediaCreationOutputEntity>,
+    onPickGallery: () -> Unit,
+    onSketch: () -> Unit,
+    onSelect: (MediaCreationOutputEntity) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val imageOutputs = recentOutputs.filterNot { mediaMimeIsVideo(it.mimeType) }
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.media_creation_add_reference),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onPickGallery, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Image, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.size(8.dp))
+                    Text(stringResource(R.string.media_creation_gallery_image))
+                }
+                OutlinedButton(onClick = onSketch, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.size(8.dp))
+                    Text(stringResource(R.string.media_creation_sketch))
+                }
+            }
+            Text(
+                text = stringResource(R.string.media_creation_recent_outputs),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (imageOutputs.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.media_creation_recent_outputs_empty),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 12.dp),
+                )
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 88.dp),
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    gridItems(imageOutputs, key = { it.path }) { output ->
+                        MediaThumbnail(
+                            file = File(output.path),
+                            isVideo = mediaMimeIsVideo(output.mimeType),
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onSelect(output) },
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun InputTile(
+    input: MediaGenerationInput,
+    onRemove: () -> Unit,
+) {
+    Box(modifier = Modifier.size(60.dp)) {
+        MediaThumbnail(
+            file = File(input.filePath.orEmpty()),
+            isVideo = input.kind == MediaInputKind.VIDEO,
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(12.dp),
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(20.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = 0.55f))
+                .clickable(onClick = onRemove),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                Icons.Default.Close,
+                contentDescription = stringResource(R.string.media_creation_remove_input),
+                tint = Color.White,
+                modifier = Modifier.size(14.dp),
+            )
+        }
+        Text(
+            text = roleLabel(input.role),
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White,
+            maxLines = 1,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .background(Color.Black.copy(alpha = 0.55f))
+                .padding(horizontal = 4.dp, vertical = 1.dp),
+        )
     }
 }
 
@@ -750,16 +962,6 @@ private fun SessionEmptyState() {
 }
 
 @Composable
-private fun paramsSummary(resolution: String?, count: Int?): String {
-    val parts = buildList {
-        resolution?.let { add(it) }
-        count?.let { add(it.toString()) }
-    }
-    val defaultLabel = stringResource(R.string.media_creation_params)
-    return parts.ifEmpty { listOf(defaultLabel) }.joinToString(" · ")
-}
-
-@Composable
 private fun modelKindLabel(kind: MediaKind): String = stringResource(
     when (kind) {
         MediaKind.IMAGE -> R.string.media_generation_image
@@ -891,40 +1093,54 @@ private fun MediaRecordCard(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                if (previewOutput != null) {
+                if (outputs.isNotEmpty()) {
                     AssistChip(
                         onClick = {
                             scope.launch {
-                                try {
-                                    saveMediaToGallery(context, File(previewOutput.path), previewOutput.mimeType)
-                                    Toast.makeText(context, R.string.media_creation_saved, Toast.LENGTH_SHORT).show()
-                                } catch (error: Exception) {
-                                    Toast.makeText(
-                                        context,
-                                        error.message ?: context.getString(R.string.media_creation_save_failed),
-                                        Toast.LENGTH_SHORT,
-                                    ).show()
+                                var saved = 0
+                                var failed = 0
+                                var lastError: String? = null
+                                outputs.forEach { output ->
+                                    try {
+                                        saveMediaToGallery(context, File(output.path), output.mimeType)
+                                        saved++
+                                    } catch (error: Exception) {
+                                        failed++
+                                        lastError = error.message
+                                    }
                                 }
+                                val message = when {
+                                    failed == 0 -> context.getString(R.string.media_creation_saved_count, saved)
+                                    saved > 0 -> context.getString(
+                                        R.string.media_creation_saved_partial,
+                                        saved,
+                                        failed,
+                                    )
+                                    else -> lastError ?: context.getString(R.string.media_creation_save_failed)
+                                }
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             }
                         },
                         label = { Text(stringResource(R.string.media_creation_save)) },
                         leadingIcon = { Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp)) },
                     )
-                    AssistChip(
-                        onClick = {
-                            try {
-                                shareMedia(context, File(previewOutput.path), previewOutput.mimeType)
-                            } catch (error: Exception) {
-                                Toast.makeText(
-                                    context,
-                                    error.message ?: context.getString(R.string.media_creation_share_failed),
-                                    Toast.LENGTH_SHORT,
-                                ).show()
-                            }
-                        },
-                        label = { Text(stringResource(R.string.media_creation_share)) },
-                        leadingIcon = { Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp)) },
-                    )
+                    previewOutput?.let { output ->
+                        AssistChip(
+                            onClick = {
+                                try {
+                                    shareMedia(context, File(output.path), output.mimeType)
+                                } catch (error: Exception) {
+                                    Toast.makeText(
+                                        context,
+                                        error.message ?: context.getString(R.string.media_creation_share_failed),
+                                        Toast.LENGTH_SHORT,
+                                    ).show()
+                                }
+                            },
+                            label = { Text(stringResource(R.string.media_creation_share)) },
+                            leadingIcon = { Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                        )
+                    }
                 }
                 if (!record.status.isActiveStatus()) {
                     AssistChip(
@@ -1095,6 +1311,17 @@ private fun roleLabel(role: ImageRole): String = stringResource(
         ImageRole.LAST_FRAME -> R.string.media_creation_role_last_frame
     }
 )
+
+private fun copyToCache(context: Context, uri: Uri): String {
+    val file = File(context.cacheDir, "media_input_${UUID.randomUUID()}")
+    val input = requireNotNull(context.contentResolver.openInputStream(uri)) {
+        "Unable to open selected media"
+    }
+    input.use { source ->
+        file.outputStream().use { target -> source.copyTo(target) }
+    }
+    return file.absolutePath
+}
 
 private fun download(
     client: OkHttpClient,

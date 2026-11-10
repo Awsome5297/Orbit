@@ -30,6 +30,13 @@
     <string name="media_creation_no_provider">Configure a media generation service in Settings first</string>
     <string name="media_creation_open_settings">Open settings</string>
     <string name="media_creation_add_image">Add media</string>
+    <string name="media_creation_add_reference">Add reference</string>
+    <string name="media_creation_gallery_image">Gallery image</string>
+    <string name="media_creation_sketch">Sketch</string>
+    <string name="media_creation_recent_outputs">Recent generations</string>
+    <string name="media_creation_recent_outputs_empty">No recent generations</string>
+    <string name="media_creation_sketch_undo">Undo</string>
+    <string name="media_creation_sketch_clear">Clear</string>
     <string name="media_creation_role_reference">Reference</string>
     <string name="media_creation_role_first_frame">First frame</string>
     <string name="media_creation_role_last_frame">Last frame</string>
@@ -64,6 +71,8 @@
     <string name="media_creation_remove_input">Remove media</string>
     <string name="media_creation_select_model">Select model</string>
     <string name="media_creation_saved">Saved to gallery</string>
+    <string name="media_creation_saved_count">%1$d images saved to gallery</string>
+    <string name="media_creation_saved_partial">%1$d saved, %2$d failed</string>
     <string name="media_creation_save_failed">Save failed</string>
     <string name="media_creation_share_failed">Share failed</string>
     <string name="media_creation_no_provider_title">No generation service available</string>

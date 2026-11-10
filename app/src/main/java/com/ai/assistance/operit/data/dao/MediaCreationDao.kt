@@ -96,6 +96,17 @@ interface MediaCreationDao {
     @Query("SELECT * FROM media_creation_outputs WHERE recordId = :recordId ORDER BY id ASC")
     fun observeOutputs(recordId: String): Flow<List<MediaCreationOutputEntity>>
 
+    @Query(
+        """
+        SELECT o.* FROM media_creation_outputs o
+        INNER JOIN media_creation_records r ON r.id = o.recordId
+        WHERE r.sessionId = :sessionId
+        ORDER BY r.createdAt DESC, o.id ASC
+        LIMIT 20
+        """
+    )
+    fun observeRecentOutputs(sessionId: String): Flow<List<MediaCreationOutputEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOutput(output: MediaCreationOutputEntity)
 
