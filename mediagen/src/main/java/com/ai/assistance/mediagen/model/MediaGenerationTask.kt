@@ -10,7 +10,8 @@ enum class MediaGenerationStatus {
     SUCCEEDED,
     FAILED,
     CANCELLED,
-    EXPIRED;
+    EXPIRED,
+    UNKNOWN;
 
     val isTerminal: Boolean
         get() = this in setOf(SUCCEEDED, FAILED, CANCELLED, EXPIRED)

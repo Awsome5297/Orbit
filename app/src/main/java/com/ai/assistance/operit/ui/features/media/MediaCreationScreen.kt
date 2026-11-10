@@ -1,5 +1,6 @@
 package com.ai.assistance.operit.ui.features.media
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,7 +48,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.ui.PlayerView
 import com.ai.assistance.mediagen.model.MediaGenerationModel
 import com.ai.assistance.mediagen.model.MediaGenerationRequest
 import com.ai.assistance.mediagen.model.MediaGenerationStatus
@@ -54,6 +60,7 @@ import com.ai.assistance.mediagen.model.MediaKind
 import com.ai.assistance.mediagen.provider.MediaGenerationManager
 import com.ai.assistance.mediagen.provider.MediaGenerationProviderSetting
 import com.ai.assistance.mediagen.provider.providers.openai.OpenAIMediaGenerationProvider
+import com.ai.assistance.mediagen.provider.providers.openrouter.OpenRouterMediaGenerationProvider
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.media.MediaCreationRepository
 import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
@@ -84,18 +91,27 @@ fun MediaCreationScreen(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val client = remember { OkHttpClient.Builder().readTimeout(10, TimeUnit.MINUTES).build() }
-    val manager = remember(client) { MediaGenerationManager(OpenAIMediaGenerationProvider(client)) }
-    val imageModels = settings.providers.flatMap { provider ->
-        provider.models.filter { it.kind == MediaKind.IMAGE }.map { model -> provider to model }
-    }.filter { (provider, _) -> provider is MediaGenerationProviderSetting.OpenAI }
+    val manager = remember(client) {
+        MediaGenerationManager(
+            OpenAIMediaGenerationProvider(client),
+            OpenRouterMediaGenerationProvider(client),
+        )
+    }
+    val generationModels = settings.providers.flatMap { provider ->
+        provider.models.mapNotNull { model ->
+            val supported = (provider is MediaGenerationProviderSetting.OpenAI && model.kind == MediaKind.IMAGE) ||
+                provider is MediaGenerationProviderSetting.OpenRouter
+            if (supported) provider to model else null
+        }
+    }
     var selected by remember { mutableStateOf<Pair<MediaGenerationProviderSetting, MediaGenerationModel>?>(null) }
     var prompt by remember { mutableStateOf("") }
     var generating by remember { mutableStateOf(false) }
     var modelMenuExpanded by remember { mutableStateOf(false) }
 
-    LaunchedEffect(imageModels) {
-        if (selected == null || imageModels.none { it.first.id == selected?.first?.id && it.second.id == selected?.second?.id }) {
-            selected = imageModels.firstOrNull()
+    LaunchedEffect(generationModels) {
+        if (selected == null || generationModels.none { it.first.id == selected?.first?.id && it.second.id == selected?.second?.id }) {
+            selected = generationModels.firstOrNull()
         }
     }
     LaunchedEffect(records.size) {
@@ -182,7 +198,7 @@ fun MediaCreationScreen(
             )
         },
         bottomBar = {
-            if (imageModels.isNotEmpty()) {
+            if (generationModels.isNotEmpty()) {
                 Surface(tonalElevation = 3.dp) {
                     Column(Modifier.fillMaxWidth().imePadding().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -197,7 +213,7 @@ fun MediaCreationScreen(
                                     Text(selectedModelLabel)
                                 }
                                 DropdownMenu(expanded = modelMenuExpanded, onDismissRequest = { modelMenuExpanded = false }) {
-                                    imageModels.forEach { pair ->
+                                    generationModels.forEach { pair ->
                                         DropdownMenuItem(
                                             text = { Text(pair.second.displayName.ifBlank { pair.second.modelId }) },
                                             onClick = {
@@ -228,7 +244,7 @@ fun MediaCreationScreen(
             }
         },
     ) { padding ->
-        if (imageModels.isEmpty()) {
+        if (generationModels.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(stringResource(R.string.media_creation_no_provider))
@@ -288,15 +304,42 @@ private fun MediaCreationRecordCard(
                 Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
             }
             outputs.forEach { output ->
-                AsyncImage(
-                    model = File(output.path),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 360.dp),
-                    contentScale = ContentScale.Fit,
-                )
+                if (output.mimeType.startsWith("video/")) {
+                    VideoOutput(File(output.path))
+                } else {
+                    AsyncImage(
+                        model = File(output.path),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 360.dp),
+                        contentScale = ContentScale.Fit,
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun VideoOutput(file: File) {
+    val context = LocalContext.current
+    val player = remember(file.path) {
+        ExoPlayer.Builder(context).build().apply {
+            setMediaItem(MediaItem.fromUri(Uri.fromFile(file)))
+            prepare()
+        }
+    }
+    DisposableEffect(player) {
+        onDispose { player.release() }
+    }
+    AndroidView(
+        factory = { viewContext ->
+            PlayerView(viewContext).apply {
+                this.player = player
+                useController = true
+            }
+        },
+        modifier = Modifier.fillMaxWidth().heightIn(max = 360.dp),
+    )
 }
 
 private fun download(

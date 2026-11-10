@@ -37,6 +37,13 @@ For_Agent: 媒体创作完整对齐的分阶段实施记录
 - [ ] 参考图编辑 UI。
 - [ ] 失败重试与中断恢复。
 
+## 阶段 3 进度
+
+- [x] OpenRouter 图片生成与视频任务适配。
+- [x] 视频异步轮询与结果下载。
+- [x] 视频本地播放（ExoPlayer）。
+- [ ] 参考视频、参考音频与首尾帧素材 UI。
+
 ## 验证
 
 - `./gradlew :app:compileDebugKotlin`

@@ -4,6 +4,7 @@ import com.ai.assistance.mediagen.model.MediaGenerationModel
 import com.ai.assistance.mediagen.model.MediaKind
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.util.UUID
 
 @Serializable
@@ -17,6 +18,15 @@ sealed class MediaGenerationProviderSetting {
     abstract val supportedKinds: Set<MediaKind>
 
     open fun downloadHeaders(url: String): Map<String, String> = emptyMap()
+
+    protected fun sameOriginBearer(url: String): Map<String, String> {
+        val target = url.toHttpUrlOrNull() ?: return emptyMap()
+        val base = baseUrl.toHttpUrlOrNull() ?: return emptyMap()
+        if (target.scheme != base.scheme || target.host != base.host || target.port != base.port) {
+            return emptyMap()
+        }
+        return mapOf("Authorization" to "Bearer $apiKey")
+    }
 
     abstract fun copyProvider(
         id: String = this.id,
@@ -140,6 +150,8 @@ sealed class MediaGenerationProviderSetting {
     ) : MediaGenerationProviderSetting() {
         override val supportedKinds: Set<MediaKind>
             get() = setOf(MediaKind.IMAGE, MediaKind.VIDEO)
+
+        override fun downloadHeaders(url: String): Map<String, String> = sameOriginBearer(url)
 
         override fun copyProvider(
             id: String,
