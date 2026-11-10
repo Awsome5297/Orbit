@@ -156,7 +156,7 @@ internal class TextItem(
         val flags = Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG or Paint.LINEAR_TEXT_FLAG
         val paint = TextPaint(flags).apply {
             textSize = size
-            this.color = color.toArgb()
+            this.color = this@TextItem.color.toArgb()
         }
         val width = ceil(min(maxWidth, Layout.getDesiredWidth(text, paint))).toInt().coerceAtLeast(1)
         StaticLayout.Builder.obtain(text, 0, text.length, paint, width).build()
