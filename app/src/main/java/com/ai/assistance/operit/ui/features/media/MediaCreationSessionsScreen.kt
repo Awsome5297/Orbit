@@ -26,7 +26,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,7 +37,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,7 +55,7 @@ import com.ai.assistance.operit.data.media.MediaCreationRepository
 import com.ai.assistance.operit.data.model.MediaCreationSessionEntity
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaCreationSessionsScreen(
     onOpenSession: (String) -> Unit,
@@ -69,7 +67,6 @@ fun MediaCreationSessionsScreen(
     val sessions by repository.observeSessions().collectAsState(initial = emptyList())
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val fabExpanded by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
     var renameTarget by remember { mutableStateOf<MediaCreationSessionEntity?>(null) }
     var renameTitle by remember { mutableStateOf("") }
     var deleteTarget by remember { mutableStateOf<MediaCreationSessionEntity?>(null) }
@@ -90,12 +87,13 @@ fun MediaCreationSessionsScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = ::createSession,
-                expanded = fabExpanded,
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.media_creation_new_session)) },
-            )
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(Modifier.size(8.dp))
+                Text(stringResource(R.string.media_creation_new_session))
+            }
         },
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),

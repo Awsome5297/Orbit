@@ -22,11 +22,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -110,7 +109,7 @@ internal fun isVideoFile(path: String?): Boolean {
     return extension in setOf("mp4", "mov", "webm", "mkv", "avi", "m4v")
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun MediaLargeTopBar(
     title: String,
@@ -118,7 +117,7 @@ internal fun MediaLargeTopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    LargeFlexibleTopAppBar(
+    LargeTopAppBar(
         title = { Text(text = title) },
         navigationIcon = {
             IconButton(onClick = onBack) {

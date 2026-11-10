@@ -199,7 +199,7 @@ fun MediaCreationScreen(
         inputs: List<MediaGenerationInput>,
     ) {
         if (text.isBlank() || generating) return
-        val capabilities = provider.capabilities(model.kind)
+        val capabilities = provider.capabilities(model.kind) ?: return
         if (capabilities.requiresRemoteInputs && inputs.isNotEmpty()) return
         generating = true
         scope.launch {
