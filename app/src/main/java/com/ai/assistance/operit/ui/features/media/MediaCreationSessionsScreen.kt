@@ -35,7 +35,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,7 +44,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,7 +66,6 @@ fun MediaCreationSessionsScreen(
     val scope = rememberCoroutineScope()
     val sessions by repository.observeSessions().collectAsState(initial = emptyList())
     val listState = rememberLazyListState()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var renameTarget by remember { mutableStateOf<MediaCreationSessionEntity?>(null) }
     var renameTitle by remember { mutableStateOf("") }
     var deleteTarget by remember { mutableStateOf<MediaCreationSessionEntity?>(null) }
@@ -78,14 +75,11 @@ fun MediaCreationSessionsScreen(
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            MediaLargeTopBar(
+            MediaTopBar(
                 title = stringResource(R.string.media_creation_title),
                 onNavigate = { openSidebar() },
-                scrollBehavior = scrollBehavior,
                 navigationIcon = Icons.Default.Menu,
-                circularNavigation = false,
             )
         },
         floatingActionButton = {

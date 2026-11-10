@@ -1,5 +1,6 @@
 package com.ai.assistance.operit.ui.features.media
 
+import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +53,9 @@ import com.ai.assistance.mediagen.model.MediaGenerationModel
 import com.ai.assistance.mediagen.model.MediaKind
 import com.ai.assistance.mediagen.provider.MediaGenerationProviderSetting
 import com.ai.assistance.operit.R
+import com.ai.assistance.operit.ui.main.components.LocalIsCurrentScreen
+import com.ai.assistance.operit.ui.main.components.LocalSetScreenSoftInputMode
+import com.ai.assistance.operit.ui.main.components.LocalSetUseScreenImePadding
 
 internal fun MediaGenerationProviderSetting.typeLabel(): String = when (this) {
     is MediaGenerationProviderSetting.OpenAI -> "OpenAI"
@@ -75,7 +79,17 @@ internal fun MediaGenerationProviderDetailScreen(
     var draft by remember(provider.id) { mutableStateOf(provider) }
     var tab by remember { mutableIntStateOf(0) }
     var deleteConfirm by remember { mutableStateOf(false) }
+    val isCurrentScreen = LocalIsCurrentScreen.current
+    val setScreenSoftInputMode = LocalSetScreenSoftInputMode.current
+    val setUseScreenImePadding = LocalSetUseScreenImePadding.current
     BackHandler(onBack = onDismiss)
+
+    SideEffect {
+        if (isCurrentScreen) {
+            setScreenSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            setUseScreenImePadding(true)
+        }
+    }
 
     fun updateBasic(
         name: String = draft.name,
@@ -96,9 +110,8 @@ internal fun MediaGenerationProviderDetailScreen(
     }
 
     Scaffold(
-        modifier = Modifier.imePadding(),
         topBar = {
-            MediaSmallTopBar(
+            MediaTopBar(
                 title = draft.displayName(),
                 onNavigate = onDismiss,
                 titleLeading = { ProviderLogo(provider = draft, size = 24.dp) },

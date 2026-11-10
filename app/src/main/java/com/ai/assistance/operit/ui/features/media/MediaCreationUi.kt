@@ -29,13 +29,11 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -49,11 +47,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.ai.assistance.mediagen.provider.MediaGenerationProviderSetting
@@ -123,40 +123,10 @@ internal fun isVideoFile(path: String?): Boolean {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun MediaLargeTopBar(
+internal fun MediaTopBar(
     title: String,
     onNavigate: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
     navigationIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
-    circularNavigation: Boolean = true,
-    actions: @Composable RowScope.() -> Unit = {},
-) {
-    LargeTopAppBar(
-        title = { Text(text = title) },
-        navigationIcon = {
-            NavigationButton(
-                onClick = onNavigate,
-                icon = navigationIcon,
-                circular = circularNavigation,
-            )
-        },
-        actions = actions,
-        scrollBehavior = scrollBehavior,
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            scrolledContainerColor = MaterialTheme.colorScheme.background,
-        ),
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-internal fun MediaSmallTopBar(
-    title: String,
-    subtitle: String? = null,
-    onNavigate: () -> Unit,
-    navigationIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
-    circularNavigation: Boolean = true,
     titleLeading: (@Composable () -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
@@ -167,62 +137,31 @@ internal fun MediaSmallTopBar(
                     titleLeading()
                     Spacer(Modifier.size(8.dp))
                 }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    if (subtitle != null) {
-                        Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 16.sp,
+                        lineHeight = 22.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
             }
         },
         navigationIcon = {
-            NavigationButton(
-                onClick = onNavigate,
-                icon = navigationIcon,
-                circular = circularNavigation,
-            )
+            IconButton(onClick = onNavigate) {
+                Icon(navigationIcon, contentDescription = null, modifier = Modifier.size(24.dp))
+            }
         },
         actions = actions,
+        expandedHeight = 56.dp,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
             scrolledContainerColor = MaterialTheme.colorScheme.background,
         ),
     )
-}
-
-@Composable
-private fun NavigationButton(
-    onClick: () -> Unit,
-    icon: ImageVector,
-    circular: Boolean,
-) {
-    if (circular) {
-        Surface(
-            onClick = onClick,
-            modifier = Modifier.size(48.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))
-            }
-        }
-    } else {
-        IconButton(onClick = onClick) {
-            Icon(icon, contentDescription = null)
-        }
-    }
 }
 
 internal fun MediaGenerationProviderSetting.logoTypeId(): String = when (this) {

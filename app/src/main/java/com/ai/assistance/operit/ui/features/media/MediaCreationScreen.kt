@@ -1,6 +1,7 @@
 package com.ai.assistance.operit.ui.features.media
 
 import android.net.Uri
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -62,6 +62,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -103,6 +104,9 @@ import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
 import com.ai.assistance.operit.data.model.MediaCreationRecordEntity
 import com.ai.assistance.operit.data.preferences.MediaGenerationPreferences
 import com.ai.assistance.operit.data.preferences.MediaGenerationSettings
+import com.ai.assistance.operit.ui.main.components.LocalIsCurrentScreen
+import com.ai.assistance.operit.ui.main.components.LocalSetScreenSoftInputMode
+import com.ai.assistance.operit.ui.main.components.LocalSetUseScreenImePadding
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.ui.PlayerView
@@ -135,6 +139,16 @@ fun MediaCreationScreen(
     val records by repository.observeRecords(sessionId).collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val isCurrentScreen = LocalIsCurrentScreen.current
+    val setScreenSoftInputMode = LocalSetScreenSoftInputMode.current
+    val setUseScreenImePadding = LocalSetUseScreenImePadding.current
+
+    SideEffect {
+        if (isCurrentScreen) {
+            setScreenSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            setUseScreenImePadding(true)
+        }
+    }
     val client = remember { OkHttpClient.Builder().readTimeout(10, TimeUnit.MINUTES).build() }
     val manager = remember(client) {
         MediaGenerationManager(
@@ -271,7 +285,7 @@ fun MediaCreationScreen(
     }
     Scaffold(
         topBar = {
-            MediaSmallTopBar(
+            MediaTopBar(
                 title = currentTitle,
                 onNavigate = onBack,
                 actions = {
@@ -413,8 +427,7 @@ private fun MediaComposer(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .imePadding()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),

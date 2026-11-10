@@ -35,7 +35,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,7 +44,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,7 +63,6 @@ fun MediaGenerationSettingsScreen(onBack: () -> Unit) {
     val preferences = remember(context) { MediaGenerationPreferences.getInstance(context) }
     val scope = rememberCoroutineScope()
     val settings by preferences.settingsFlow.collectAsState(initial = MediaGenerationSettings())
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     var editing by remember { mutableStateOf<MediaGenerationProviderSetting?>(null) }
     var deleteTarget by remember { mutableStateOf<MediaGenerationProviderSetting?>(null) }
     var showTypePicker by remember { mutableStateOf(false) }
@@ -93,12 +90,10 @@ fun MediaGenerationSettingsScreen(onBack: () -> Unit) {
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            MediaLargeTopBar(
+            MediaTopBar(
                 title = stringResource(R.string.media_generation_title),
                 onNavigate = onBack,
-                scrollBehavior = scrollBehavior,
                 actions = {
                     IconButton(onClick = { showTypePicker = true }) {
                         Icon(Icons.Default.Add, contentDescription = stringResource(R.string.media_generation_add_provider))
