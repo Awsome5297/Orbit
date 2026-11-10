@@ -100,7 +100,6 @@ internal fun MediaGenerationProviderDetailScreen(
         topBar = {
             MediaSmallTopBar(
                 title = draft.displayName(),
-                subtitle = draft.typeLabel(),
                 onNavigate = onDismiss,
                 titleLeading = { ProviderLogo(provider = draft, size = 24.dp) },
             )

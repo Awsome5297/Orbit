@@ -273,9 +273,6 @@ fun MediaCreationScreen(
         topBar = {
             MediaSmallTopBar(
                 title = currentTitle,
-                subtitle = selected?.let { (provider, model) ->
-                    "${model.displayName.ifBlank { model.modelId }} · ${provider.name}"
-                },
                 onNavigate = onBack,
                 actions = {
                     IconButton(onClick = onOpenSettings) {
