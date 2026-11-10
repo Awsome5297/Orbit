@@ -60,8 +60,10 @@ import com.ai.assistance.mediagen.model.MediaKind
 import com.ai.assistance.mediagen.provider.MediaGenerationManager
 import com.ai.assistance.mediagen.provider.MediaGenerationProviderSetting
 import com.ai.assistance.mediagen.provider.providers.aliyun.AliyunMediaGenerationProvider
+import com.ai.assistance.mediagen.provider.providers.minimax.MiniMaxMediaGenerationProvider
 import com.ai.assistance.mediagen.provider.providers.openai.OpenAIMediaGenerationProvider
 import com.ai.assistance.mediagen.provider.providers.openrouter.OpenRouterMediaGenerationProvider
+import com.ai.assistance.mediagen.provider.providers.volcengine.VolcengineMediaGenerationProvider
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.media.MediaCreationRepository
 import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
@@ -96,6 +98,8 @@ fun MediaCreationScreen(
         MediaGenerationManager(
             OpenAIMediaGenerationProvider(client),
             AliyunMediaGenerationProvider(client),
+            VolcengineMediaGenerationProvider(client),
+            MiniMaxMediaGenerationProvider(client),
             OpenRouterMediaGenerationProvider(client),
         )
     }
@@ -103,6 +107,8 @@ fun MediaCreationScreen(
         provider.models.mapNotNull { model ->
             val supported = (provider is MediaGenerationProviderSetting.OpenAI && model.kind == MediaKind.IMAGE) ||
                 provider is MediaGenerationProviderSetting.Aliyun ||
+                provider is MediaGenerationProviderSetting.Volcengine ||
+                provider is MediaGenerationProviderSetting.MiniMax ||
                 provider is MediaGenerationProviderSetting.OpenRouter
             if (supported) provider to model else null
         }

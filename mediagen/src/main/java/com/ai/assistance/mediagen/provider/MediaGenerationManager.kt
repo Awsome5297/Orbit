@@ -7,12 +7,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import com.ai.assistance.mediagen.provider.providers.aliyun.AliyunMediaGenerationProvider
+import com.ai.assistance.mediagen.provider.providers.minimax.MiniMaxMediaGenerationProvider
 import com.ai.assistance.mediagen.provider.providers.openai.OpenAIMediaGenerationProvider
 import com.ai.assistance.mediagen.provider.providers.openrouter.OpenRouterMediaGenerationProvider
+import com.ai.assistance.mediagen.provider.providers.volcengine.VolcengineMediaGenerationProvider
 
 class MediaGenerationManager(
     private val openAI: OpenAIMediaGenerationProvider,
     private val aliyun: AliyunMediaGenerationProvider,
+    private val volcengine: VolcengineMediaGenerationProvider,
+    private val miniMax: MiniMaxMediaGenerationProvider,
     private val openRouter: OpenRouterMediaGenerationProvider,
 ) {
     suspend fun create(
@@ -22,6 +26,8 @@ class MediaGenerationManager(
     ): Result<MediaGenerationTask> = when (setting) {
         is MediaGenerationProviderSetting.OpenAI -> openAI.create(setting, model, request)
         is MediaGenerationProviderSetting.Aliyun -> aliyun.create(setting, model, request)
+        is MediaGenerationProviderSetting.Volcengine -> volcengine.create(setting, model, request)
+        is MediaGenerationProviderSetting.MiniMax -> miniMax.create(setting, model, request)
         is MediaGenerationProviderSetting.OpenRouter -> openRouter.create(setting, model, request)
         else -> Result.failure(
             UnsupportedOperationException("${setting.name} media generation is not implemented yet")
@@ -35,6 +41,8 @@ class MediaGenerationManager(
     ): Result<MediaGenerationTask> = when (setting) {
         is MediaGenerationProviderSetting.OpenAI -> openAI.query(setting, model, taskId)
         is MediaGenerationProviderSetting.Aliyun -> aliyun.query(setting, model, taskId)
+        is MediaGenerationProviderSetting.Volcengine -> volcengine.query(setting, model, taskId)
+        is MediaGenerationProviderSetting.MiniMax -> miniMax.query(setting, model, taskId)
         is MediaGenerationProviderSetting.OpenRouter -> openRouter.query(setting, model, taskId)
         else -> Result.failure(
             UnsupportedOperationException("${setting.name} media generation is not implemented yet")

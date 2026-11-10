@@ -51,6 +51,14 @@ For_Agent: 媒体创作完整对齐的分阶段实施记录
 - [x] workspaceId 占位符解析。
 - [ ] 参考视频、参考音频与首尾帧素材 UI。
 
+## 阶段 5 进度
+
+- [x] 火山方舟 Seedream 图片生成。
+- [x] 火山方舟 Seedance 视频任务与轮询。
+- [x] MiniMax 视频任务与轮询。
+- [ ] 首尾帧、参考视频、参考音频素材选择 UI。
+- [ ] 失败重试与中断恢复。
+
 ## 验证
 
 - `./gradlew :app:compileDebugKotlin`
