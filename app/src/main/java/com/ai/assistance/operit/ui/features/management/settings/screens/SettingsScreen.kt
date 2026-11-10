@@ -52,6 +52,7 @@ fun SettingsScreen(
         navigateToDataAndBackup: () -> Unit,
 
         navigateToSpeechServicesSettings: () -> Unit,
+        navigateToMediaGenerationSettings: () -> Unit,
         navigateToPerformanceMonitor: () -> Unit,
         navigateToAbout: () -> Unit
 ) {
@@ -131,6 +132,13 @@ fun SettingsScreen(
                                 subtitle = stringResource(id = R.string.settings_speech_services_subtitle),
                                 icon = Icons.Default.RecordVoiceOver,
                                 onClick = navigateToSpeechServicesSettings
+                        )
+
+                        CompactSettingsItem(
+                                title = stringResource(id = R.string.settings_media_generation),
+                                subtitle = stringResource(id = R.string.settings_media_generation_subtitle),
+                                icon = Icons.Default.Palette,
+                                onClick = navigateToMediaGenerationSettings
                         )
 
                 }

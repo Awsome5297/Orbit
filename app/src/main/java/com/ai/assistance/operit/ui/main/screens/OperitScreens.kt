@@ -39,6 +39,7 @@ import com.ai.assistance.operit.ui.features.extensions.packages.screens.PackageM
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.PackageDetailEntryScreen
 import com.ai.assistance.operit.ui.features.media.MediaCreationScreen
 import com.ai.assistance.operit.ui.features.media.MediaCreationSessionsScreen
+import com.ai.assistance.operit.ui.features.media.MediaGenerationSettingsScreen
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.ArtifactPublishScreen
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.RepoMarketPublishScreen
 import com.ai.assistance.operit.ui.features.extensions.packages.screens.UnifiedMarketManageScreen
@@ -250,6 +251,21 @@ sealed class Screen(
         }
     }
 
+    data object MediaGenerationSettings : Screen(titleRes = R.string.settings_media_generation) {
+        @Composable
+        override fun Content(
+            navController: NavController,
+            navigateTo: ScreenNavigationHandler,
+            onGoBack: () -> Unit,
+            hasBackgroundImage: Boolean,
+            onLoading: (Boolean) -> Unit,
+            onError: (String) -> Unit,
+            onGestureConsumed: (Boolean) -> Unit
+        ) {
+            MediaGenerationSettingsScreen(onBack = onGoBack)
+        }
+    }
+
     data class MediaCreation(val sessionId: String) : Screen(titleRes = R.string.media_creation_title) {
         @Composable
         override fun Content(
@@ -261,7 +277,11 @@ sealed class Screen(
             onError: (String) -> Unit,
             onGestureConsumed: (Boolean) -> Unit
         ) {
-            MediaCreationScreen(sessionId = sessionId, onBack = onGoBack)
+            MediaCreationScreen(
+                sessionId = sessionId,
+                onBack = onGoBack,
+                onOpenSettings = { navigateTo(MediaGenerationSettings) },
+            )
         }
     }
 
@@ -672,6 +692,7 @@ sealed class Screen(
                     navigateToDataAndBackup = { navigateTo(ChatBackupSettings) },
 
                     navigateToSpeechServicesSettings = { navigateTo(SpeechServicesSettings) },
+                    navigateToMediaGenerationSettings = { navigateTo(MediaGenerationSettings) },
                     navigateToPerformanceMonitor = { navigateTo(PerformanceMonitor) },
                     navigateToAbout = { navigateTo(About) }
             )

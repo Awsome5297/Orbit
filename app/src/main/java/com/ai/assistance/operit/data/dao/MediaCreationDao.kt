@@ -48,6 +48,9 @@ interface MediaCreationDao {
     @Query("SELECT * FROM media_creation_records WHERE status IN ('PREPARING', 'QUEUED', 'RUNNING', 'DOWNLOADING')")
     suspend fun getActiveRecords(): List<MediaCreationRecordEntity>
 
+    @Query("SELECT * FROM media_creation_records WHERE id = :recordId")
+    suspend fun getRecord(recordId: String): MediaCreationRecordEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRecord(record: MediaCreationRecordEntity)
 
@@ -64,6 +67,11 @@ interface MediaCreationDao {
 
     @Query("DELETE FROM media_creation_records WHERE id = :recordId")
     suspend fun deleteRecord(recordId: String)
+
+    @Query(
+        "UPDATE media_creation_sessions SET nodeCount = (SELECT COUNT(*) FROM media_creation_nodes WHERE sessionId = :sessionId), updatedAt = :updatedAt WHERE id = :sessionId"
+    )
+    suspend fun updateSessionCounts(sessionId: String, updatedAt: Long)
 
     @Query("SELECT * FROM media_creation_outputs WHERE recordId = :recordId ORDER BY id ASC")
     fun observeOutputs(recordId: String): Flow<List<MediaCreationOutputEntity>>

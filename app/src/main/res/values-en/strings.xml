@@ -23,7 +23,21 @@
     <string name="media_creation_items_count">%1$d items</string>
     <string name="media_creation_delete_title">Delete session</string>
     <string name="media_creation_delete_message">Delete “%1$s” and its generated results?</string>
-    <string name="media_creation_detail_pending">Session created. Image and video generation will be connected in the next phase.</string>
+    <string name="media_creation_prompt_hint">Describe the image you want to create</string>
+    <string name="media_creation_generate">Generate</string>
+    <string name="media_creation_generating">Generating…</string>
+    <string name="media_creation_model">Model</string>
+    <string name="media_creation_no_provider">Configure a media generation service in Settings first</string>
+    <string name="media_creation_open_settings">Open settings</string>
+    <string name="settings_media_generation">Media generation services</string>
+    <string name="settings_media_generation_subtitle">Configure image and video generation providers</string>
+    <string name="media_generation_add_provider">Add provider</string>
+    <string name="media_generation_no_providers">No media generation provider configured</string>
+    <string name="media_generation_model_count">%1$d models</string>
+    <string name="media_generation_edit_provider">Edit %1$s</string>
+    <string name="media_generation_name">Name</string>
+    <string name="media_generation_models">Models</string>
+    <string name="media_generation_models_hint">One per line: modelId|IMAGE or modelId|VIDEO</string>
     <string name="nav_terminal">Terminal</string>
     <string name="nav_item_agreement">User Agreement</string>
 
