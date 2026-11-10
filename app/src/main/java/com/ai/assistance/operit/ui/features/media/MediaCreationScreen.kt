@@ -1,10 +1,7 @@
 package com.ai.assistance.operit.ui.features.media
 
-import android.content.Context
 import android.net.Uri
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,36 +22,37 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -77,6 +75,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -161,24 +160,12 @@ fun MediaCreationScreen(
     var selected by remember { mutableStateOf<Pair<MediaGenerationProviderSetting, MediaGenerationModel>?>(null) }
     var prompt by remember { mutableStateOf("") }
     var generating by remember { mutableStateOf(false) }
-    var inputRole by remember { mutableStateOf(ImageRole.REFERENCE) }
-    var selectedInputs by remember { mutableStateOf<List<MediaGenerationInput>>(emptyList()) }
     var preview by remember { mutableStateOf<MediaPreview?>(null) }
     var deleteTarget by remember { mutableStateOf<MediaCreationRecordEntity?>(null) }
-
-    val pickMedia = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) {
-            scope.launch {
-                val path = withContext(Dispatchers.IO) { copyToCache(context, uri) }
-                selectedInputs = selectedInputs + MediaGenerationInput(
-                    kind = MediaInputKind.IMAGE,
-                    role = inputRole,
-                    filePath = path,
-                    mimeType = context.contentResolver.getType(uri),
-                )
-            }
-        }
-    }
+    var showModelPicker by remember { mutableStateOf(false) }
+    var showParams by remember { mutableStateOf(false) }
+    var resolution by remember { mutableStateOf<String?>(null) }
+    var count by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(generationModels) {
         if (selected == null || generationModels.none {
@@ -216,7 +203,12 @@ fun MediaCreationScreen(
                 manager.generate(
                     setting = provider,
                     model = model,
-                    request = MediaGenerationRequest(prompt = text, count = 1, inputs = inputs),
+                    request = MediaGenerationRequest(
+                        prompt = text,
+                        inputs = inputs,
+                        count = count,
+                        resolution = resolution,
+                    ),
                 ).collect { task ->
                     repository.finishRecord(recordId, task.status.name, task.id, task.error)
                     if (task.status == MediaGenerationStatus.SUCCEEDED) {
@@ -253,7 +245,7 @@ fun MediaCreationScreen(
 
     fun generate() {
         val selection = selected ?: return
-        startGeneration(selection.first, selection.second, prompt.trim(), selectedInputs)
+        startGeneration(selection.first, selection.second, prompt.trim(), emptyList())
     }
 
     fun regenerate(record: MediaCreationRecordEntity) {
@@ -270,8 +262,6 @@ fun MediaCreationScreen(
             selected = provider to model
         }
         prompt = record.prompt
-        selectedInputs = json.decodeFromString<List<MediaGenerationInput>>(record.inputsJson)
-        inputRole = selectedInputs.firstOrNull()?.role ?: ImageRole.REFERENCE
     }
 
     val currentTitle = when {
@@ -279,12 +269,6 @@ fun MediaCreationScreen(
         session?.title.isNullOrBlank() -> stringResource(R.string.media_creation_unnamed)
         else -> session?.title.orEmpty()
     }
-    val selectedModelLabel = selected?.second?.let { model ->
-        model.displayName.ifBlank { model.modelId }
-    } ?: stringResource(R.string.media_creation_select_model)
-    val selectedCapabilities = selected?.let { (provider, model) -> provider.capabilities(model.kind) }
-    val requiresRemote = selectedCapabilities?.requiresRemoteInputs == true && selectedInputs.isNotEmpty()
-
     Scaffold(
         topBar = {
             MediaSmallTopBar(
@@ -292,7 +276,7 @@ fun MediaCreationScreen(
                 subtitle = selected?.let { (provider, model) ->
                     "${model.displayName.ifBlank { model.modelId }} · ${provider.name}"
                 },
-                onBack = onBack,
+                onNavigate = onBack,
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, contentDescription = null)
@@ -303,21 +287,14 @@ fun MediaCreationScreen(
         bottomBar = {
             if (generationModels.isNotEmpty()) {
                 MediaComposer(
-                    selectedModelLabel = selectedModelLabel,
-                    models = generationModels,
+                    selected = selected,
                     prompt = prompt,
                     onPromptChange = { prompt = it },
-                    inputs = selectedInputs,
-                    inputRole = inputRole,
-                    onRoleChange = { inputRole = it },
-                    onPickMedia = { pickMedia.launch("image/*") },
-                    onRemoveInput = { input ->
-                        selectedInputs = selectedInputs.filterNot { it == input }
-                    },
                     generating = generating,
-                    requiresRemote = requiresRemote,
+                    paramsSummary = paramsSummary(resolution, count),
+                    onOpenModelPicker = { showModelPicker = true },
+                    onOpenParams = { showParams = true },
                     onGenerate = ::generate,
-                    onSelectModel = { selected = it },
                 )
             }
         },
@@ -341,10 +318,7 @@ fun MediaCreationScreen(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center,
             ) {
-                MediaEmptyState(
-                    title = stringResource(R.string.media_creation_empty),
-                    message = stringResource(R.string.media_creation_empty_hint),
-                )
+                SessionEmptyState()
             }
 
             else -> LazyColumn(
@@ -376,6 +350,32 @@ fun MediaCreationScreen(
         }
     }
 
+    if (showModelPicker) {
+        ModelPickerSheet(
+            models = generationModels,
+            selected = selected,
+            onSelect = {
+                selected = it
+                showModelPicker = false
+            },
+            onManage = {
+                showModelPicker = false
+                onOpenSettings()
+            },
+            onDismiss = { showModelPicker = false },
+        )
+    }
+
+    if (showParams) {
+        MediaParamsSheet(
+            resolution = resolution,
+            count = count,
+            onResolutionChange = { resolution = it },
+            onCountChange = { count = it },
+            onDismiss = { showParams = false },
+        )
+    }
+
     preview?.let { target ->
         MediaPreviewDialog(target = target, onDismiss = { preview = null })
     }
@@ -404,22 +404,15 @@ fun MediaCreationScreen(
 
 @Composable
 private fun MediaComposer(
-    selectedModelLabel: String,
-    models: List<Pair<MediaGenerationProviderSetting, MediaGenerationModel>>,
+    selected: Pair<MediaGenerationProviderSetting, MediaGenerationModel>?,
     prompt: String,
     onPromptChange: (String) -> Unit,
-    inputs: List<MediaGenerationInput>,
-    inputRole: ImageRole,
-    onRoleChange: (ImageRole) -> Unit,
-    onPickMedia: () -> Unit,
-    onRemoveInput: (MediaGenerationInput) -> Unit,
     generating: Boolean,
-    requiresRemote: Boolean,
+    paramsSummary: String,
+    onOpenModelPicker: () -> Unit,
+    onOpenParams: () -> Unit,
     onGenerate: () -> Unit,
-    onSelectModel: (Pair<MediaGenerationProviderSetting, MediaGenerationModel>) -> Unit,
 ) {
-    var modelMenu by remember { mutableStateOf(false) }
-    var roleMenu by remember { mutableStateOf(false) }
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -431,21 +424,8 @@ private fun MediaComposer(
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            if (inputs.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    inputs.forEach { input ->
-                        InputTile(input = input, onRemove = { onRemoveInput(input) })
-                    }
-                }
-            }
             OutlinedTextField(
                 value = prompt,
                 onValueChange = onPromptChange,
@@ -454,11 +434,6 @@ private fun MediaComposer(
                 minLines = 1,
                 maxLines = 4,
                 shape = RoundedCornerShape(22.dp),
-                leadingIcon = {
-                    IconButton(onClick = onPickMedia) {
-                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.media_creation_add_image))
-                    }
-                },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
@@ -466,79 +441,40 @@ private fun MediaComposer(
                     unfocusedIndicatorColor = Color.Transparent,
                 ),
             )
-            if (requiresRemote) {
-                Text(
-                    text = stringResource(R.string.media_creation_requires_remote),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                )
-            }
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    TextButton(onClick = { modelMenu = true }) {
-                        Icon(
-                            Icons.Default.Image,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = selectedModelLabel,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false),
-                        )
-                    }
-                    DropdownMenu(expanded = modelMenu, onDismissRequest = { modelMenu = false }) {
-                        models.forEach { pair ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(pair.second.displayName.ifBlank { pair.second.modelId })
-                                },
-                                onClick = {
-                                    onSelectModel(pair)
-                                    modelMenu = false
-                                },
-                            )
-                        }
+                if (selected != null) {
+                    ProviderLogo(
+                        provider = selected.first,
+                        size = 34.dp,
+                        modifier = Modifier.clickable(onClick = onOpenModelPicker),
+                        withContainer = false,
+                    )
+                } else {
+                    IconButton(onClick = onOpenModelPicker) {
+                        Icon(Icons.Default.Image, contentDescription = null)
                     }
                 }
-                Box {
-                    TextButton(onClick = { roleMenu = true }) {
-                        Text(roleLabel(inputRole))
-                    }
-                    DropdownMenu(expanded = roleMenu, onDismissRequest = { roleMenu = false }) {
-                        ImageRole.entries.forEach { role ->
-                            DropdownMenuItem(
-                                text = { Text(roleLabel(role)) },
-                                onClick = {
-                                    onRoleChange(role)
-                                    roleMenu = false
-                                },
-                            )
-                        }
-                    }
-                }
-                Button(
+                AssistChip(
+                    onClick = onOpenParams,
+                    label = { Text(paramsSummary) },
+                    leadingIcon = {
+                        Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(16.dp))
+                    },
+                )
+                Spacer(Modifier.weight(1f))
+                FilledIconButton(
                     onClick = onGenerate,
-                    enabled = prompt.isNotBlank() && !generating && !requiresRemote,
-                    shape = RoundedCornerShape(50),
-                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+                    enabled = prompt.isNotBlank() && !generating,
+                    modifier = Modifier.size(48.dp),
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Filled.Send,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        if (generating) stringResource(R.string.media_creation_generating)
-                        else stringResource(R.string.media_creation_generate)
+                        Icons.Default.ArrowUpward,
+                        contentDescription = stringResource(R.string.media_creation_generate),
+                        modifier = Modifier.size(20.dp),
                     )
                 }
             }
@@ -546,48 +482,280 @@ private fun MediaComposer(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun InputTile(
-    input: MediaGenerationInput,
-    onRemove: () -> Unit,
+private fun ModelPickerSheet(
+    models: List<Pair<MediaGenerationProviderSetting, MediaGenerationModel>>,
+    selected: Pair<MediaGenerationProviderSetting, MediaGenerationModel>?,
+    onSelect: (Pair<MediaGenerationProviderSetting, MediaGenerationModel>) -> Unit,
+    onManage: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
-    val path = input.filePath.orEmpty()
-    Box(modifier = Modifier.size(60.dp)) {
-        MediaThumbnail(
-            file = File(path),
-            isVideo = input.kind == MediaInputKind.VIDEO,
-            modifier = Modifier.fillMaxSize(),
-            shape = RoundedCornerShape(12.dp),
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .size(20.dp)
-                .clip(CircleShape)
-                .background(Color.Black.copy(alpha = 0.55f))
-                .clickable(onClick = onRemove),
-            contentAlignment = Alignment.Center,
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            Icon(
-                Icons.Default.Close,
-                contentDescription = stringResource(R.string.media_creation_remove_input),
-                tint = Color.White,
-                modifier = Modifier.size(14.dp),
+            Text(
+                text = stringResource(R.string.media_creation_select_model),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 4.dp),
             )
+            LazyColumn(modifier = Modifier.fillMaxWidth().heightIn(max = 480.dp)) {
+                models.groupBy { it.first.id }.forEach { (_, pairs) ->
+                    val provider = pairs.first().first
+                    item(key = "provider-${provider.id}") {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            ProviderLogo(provider = provider, size = 24.dp)
+                            Spacer(Modifier.size(10.dp))
+                            Text(
+                                text = provider.displayName(),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    items(pairs, key = { it.second.id }) { pair ->
+                        val isSelected = selected?.let {
+                            it.first.id == pair.first.id && it.second.id == pair.second.id
+                        } == true
+                        Surface(
+                            onClick = { onSelect(pair) },
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            } else {
+                                Color.Transparent
+                            },
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 13.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    Icons.Default.Image,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(22.dp),
+                                )
+                                Spacer(Modifier.size(10.dp))
+                                Text(
+                                    text = pair.second.displayName.ifBlank { pair.second.modelId },
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Text(
+                                    text = modelKindLabel(pair.second.kind),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 8.dp),
+                                )
+                                if (isSelected) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            TextButton(onClick = onManage, modifier = Modifier.align(Alignment.End)) {
+                Text(stringResource(R.string.media_generation_manage))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun MediaParamsSheet(
+    resolution: String?,
+    count: Int?,
+    onResolutionChange: (String?) -> Unit,
+    onCountChange: (Int?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val resolutionPresets = listOf("1024x1024", "1536x1024", "1024x1536")
+    var customResolution by remember {
+        mutableStateOf(resolution?.takeIf { it !in resolutionPresets }.orEmpty())
+    }
+    var customCount by remember { mutableStateOf(count?.toString().orEmpty()) }
+
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.media_creation_generate_params),
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(
+                    onClick = {
+                        customResolution = ""
+                        customCount = ""
+                        onResolutionChange(null)
+                        onCountChange(null)
+                    }
+                ) {
+                    Text(stringResource(R.string.media_creation_restore_defaults))
+                }
+            }
+            Text(
+                text = stringResource(R.string.media_creation_default),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = stringResource(R.string.media_creation_resolution),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                FilterChip(
+                    selected = resolution == null,
+                    onClick = {
+                        customResolution = ""
+                        onResolutionChange(null)
+                    },
+                    label = { Text(stringResource(R.string.media_creation_default)) },
+                )
+                resolutionPresets.forEach { preset ->
+                    FilterChip(
+                        selected = resolution == preset,
+                        onClick = {
+                            customResolution = ""
+                            onResolutionChange(preset)
+                        },
+                        label = { Text(preset) },
+                    )
+                }
+            }
+            OutlinedTextField(
+                value = customResolution,
+                onValueChange = {
+                    customResolution = it
+                    onResolutionChange(it.ifBlank { null })
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.media_creation_resolution_custom_hint)) },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+            )
+            Text(
+                text = stringResource(R.string.media_creation_count),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                FilterChip(
+                    selected = count == null,
+                    onClick = {
+                        customCount = ""
+                        onCountChange(null)
+                    },
+                    label = { Text(stringResource(R.string.media_creation_default)) },
+                )
+                listOf(1, 2, 3, 4).forEach { value ->
+                    FilterChip(
+                        selected = count == value,
+                        onClick = {
+                            customCount = ""
+                            onCountChange(value)
+                        },
+                        label = { Text(value.toString()) },
+                    )
+                }
+            }
+            OutlinedTextField(
+                value = customCount,
+                onValueChange = {
+                    customCount = it
+                    onCountChange(it.toIntOrNull()?.takeIf { value -> value > 0 })
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.media_creation_count_custom_hint)) },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+            )
+            Spacer(Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun SessionEmptyState() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+    ) {
+        Surface(
+            modifier = Modifier.size(112.dp),
+            shape = OrganicShape(seed = 11, lobes = 8),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(
+                    Icons.Default.Image,
+                    contentDescription = null,
+                    modifier = Modifier.size(42.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Icon(
+                    Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(14.dp)
+                        .size(18.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
         }
         Text(
-            text = roleLabel(input.role),
-            style = MaterialTheme.typography.labelSmall,
-            color = Color.White,
-            maxLines = 1,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.55f))
-                .padding(horizontal = 4.dp, vertical = 1.dp),
+            text = stringResource(R.string.media_creation_session_empty_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
         )
     }
 }
+
+@Composable
+private fun paramsSummary(resolution: String?, count: Int?): String {
+    val parts = buildList {
+        resolution?.let { add(it) }
+        count?.let { add(it.toString()) }
+    }
+    val defaultLabel = stringResource(R.string.media_creation_params)
+    return parts.ifEmpty { listOf(defaultLabel) }.joinToString(" · ")
+}
+
+@Composable
+private fun modelKindLabel(kind: MediaKind): String = stringResource(
+    when (kind) {
+        MediaKind.IMAGE -> R.string.media_generation_image
+        MediaKind.VIDEO -> R.string.media_generation_video
+    }
+)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -917,17 +1085,6 @@ private fun roleLabel(role: ImageRole): String = stringResource(
         ImageRole.LAST_FRAME -> R.string.media_creation_role_last_frame
     }
 )
-
-private fun copyToCache(context: Context, uri: Uri): String {
-    val file = File(context.cacheDir, "media_input_${UUID.randomUUID()}")
-    val input = requireNotNull(context.contentResolver.openInputStream(uri)) {
-        "Unable to open selected media"
-    }
-    input.use { source ->
-        file.outputStream().use { target -> source.copyTo(target) }
-    }
-    return file.absolutePath
-}
 
 private fun download(
     client: OkHttpClient,

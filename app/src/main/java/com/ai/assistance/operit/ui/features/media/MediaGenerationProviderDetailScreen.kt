@@ -14,11 +14,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -98,7 +101,8 @@ internal fun MediaGenerationProviderDetailScreen(
             MediaSmallTopBar(
                 title = draft.displayName(),
                 subtitle = draft.typeLabel(),
-                onBack = onDismiss,
+                onNavigate = onDismiss,
+                titleLeading = { ProviderLogo(provider = draft, size = 24.dp) },
             )
         },
         bottomBar = {
@@ -152,11 +156,17 @@ internal fun MediaGenerationProviderDetailScreen(
                     selected = tab == 0,
                     onClick = { tab = 0 },
                     label = { Text(stringResource(R.string.media_generation_basic_tab)) },
+                    leadingIcon = {
+                        Icon(Icons.Default.Build, contentDescription = null, modifier = Modifier.size(18.dp))
+                    },
                 )
                 FilterChip(
                     selected = tab == 1,
                     onClick = { tab = 1 },
                     label = { Text(stringResource(R.string.media_generation_models_tab)) },
+                    leadingIcon = {
+                        Icon(Icons.Default.List, contentDescription = null, modifier = Modifier.size(18.dp))
+                    },
                 )
             }
             if (tab == 0) {
@@ -336,7 +346,7 @@ private fun ModelSettings(
                 }
             }
         }
-        TextButton(
+        Card(
             onClick = {
                 onModelsChange(
                     draft.models + MediaGenerationModel(
@@ -344,11 +354,37 @@ private fun ModelSettings(
                         kind = supportedKinds.first(),
                     )
                 )
-            }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
-            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.media_generation_add_model))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Surface(
+                    modifier = Modifier.size(40.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                    }
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = stringResource(R.string.media_generation_add_model),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Text(
+                        text = stringResource(R.string.media_generation_add_model_hint),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
     }
 }

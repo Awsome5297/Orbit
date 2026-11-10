@@ -19,8 +19,8 @@
     <string name="media_creation_title">Media Creation</string>
     <string name="media_creation_new_session">New session</string>
     <string name="media_creation_empty">No media creation sessions yet</string>
-    <string name="media_creation_unnamed">Untitled session</string>
-    <string name="media_creation_items_count">%1$d items</string>
+    <string name="media_creation_unnamed">New session</string>
+    <string name="media_creation_items_count">%1$d records</string>
     <string name="media_creation_delete_title">Delete session</string>
     <string name="media_creation_delete_message">Delete “%1$s” and its generated results?</string>
     <string name="media_creation_prompt_hint">Describe the image or video you want to create</string>
@@ -36,7 +36,16 @@
     <string name="media_creation_requires_remote">This provider requires public media URLs; local reference media is not supported yet</string>
     <string name="media_creation_subtitle">Image and video creation</string>
     <string name="media_creation_empty_hint">Start with a sentence and create your first piece</string>
-    <string name="media_creation_active_meta">Generating · %1$d tasks · %2$s</string>
+    <string name="media_creation_session_empty_hint">Write a prompt below to generate an image or video.\nThe result can be used directly as input for the next round.</string>
+    <string name="media_creation_params">Parameters</string>
+    <string name="media_creation_generate_params">Generation parameters</string>
+    <string name="media_creation_restore_defaults">Restore all defaults</string>
+    <string name="media_creation_default">Default</string>
+    <string name="media_creation_resolution">Resolution</string>
+    <string name="media_creation_count">Count</string>
+    <string name="media_creation_resolution_custom_hint">e.g. 2K or 1536x1024</string>
+    <string name="media_creation_count_custom_hint">Default</string>
+    <string name="media_creation_active_meta">Generating · %1$d records · %2$s</string>
     <string name="media_creation_status_preparing">Preparing</string>
     <string name="media_creation_status_queued">Queued</string>
     <string name="media_creation_status_running">Generating</string>
@@ -68,7 +77,8 @@
     <string name="media_generation_name">Name</string>
     <string name="media_generation_models">Models</string>
     <string name="media_generation_models_hint">One per line: modelId|IMAGE or modelId|VIDEO</string>
-    <string name="media_generation_type">Type</string>
+    <string name="media_generation_title">Media</string>
+    <string name="media_generation_type">Provider type</string>
     <string name="media_generation_api_key">API Key</string>
     <string name="media_generation_base_url">Base URL</string>
     <string name="media_generation_workspace_id">Workspace ID (optional)</string>
@@ -76,6 +86,8 @@
     <string name="media_generation_basic_tab">Basic</string>
     <string name="media_generation_models_tab">Models</string>
     <string name="media_generation_add_model">Add model</string>
+    <string name="media_generation_add_model_hint">The model ID is sent to the API unchanged</string>
+    <string name="media_generation_manage">Manage providers</string>
     <string name="media_generation_model_id">Model ID</string>
     <string name="media_generation_image">Image</string>
     <string name="media_generation_video">Video</string>

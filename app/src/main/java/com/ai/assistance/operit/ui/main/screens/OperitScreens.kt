@@ -246,7 +246,6 @@ sealed class Screen(
         ) {
             MediaCreationSessionsScreen(
                 onOpenSession = { sessionId -> navigateTo(MediaCreation(sessionId)) },
-                onBack = onGoBack,
             )
         }
     }

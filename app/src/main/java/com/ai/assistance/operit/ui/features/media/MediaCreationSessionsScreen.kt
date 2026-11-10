@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -53,16 +54,17 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.media.MediaCreationRepository
 import com.ai.assistance.operit.data.model.MediaCreationSessionEntity
+import com.ai.assistance.operit.ui.features.conversation.chat.modules.sidebar.LocalOpenMainChatSidebar
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaCreationSessionsScreen(
     onOpenSession: (String) -> Unit,
-    onBack: () -> Unit,
 ) {
     val context = LocalContext.current
     val repository = remember(context) { MediaCreationRepository.getInstance(context) }
+    val openSidebar = LocalOpenMainChatSidebar.current
     val scope = rememberCoroutineScope()
     val sessions by repository.observeSessions().collectAsState(initial = emptyList())
     val listState = rememberLazyListState()
@@ -80,8 +82,10 @@ fun MediaCreationSessionsScreen(
         topBar = {
             MediaLargeTopBar(
                 title = stringResource(R.string.media_creation_title),
-                onBack = onBack,
+                onNavigate = { openSidebar() },
                 scrollBehavior = scrollBehavior,
+                navigationIcon = Icons.Default.Menu,
+                circularNavigation = false,
             )
         },
         floatingActionButton = {
@@ -196,8 +200,8 @@ private fun SessionCard(
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(start = 14.dp, top = 14.dp, end = 4.dp, bottom = 14.dp),

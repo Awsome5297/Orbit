@@ -7,15 +7,19 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -37,29 +41,37 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
+import com.ai.assistance.mediagen.provider.MediaGenerationProviderSetting
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.model.MediaCreationSessionEntity
+import com.ai.assistance.operit.ui.common.icons.ProviderLogoLoader
+import com.ai.assistance.operit.ui.common.icons.rememberAssetLogoPainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
-import android.text.format.DateUtils
 
 /** 会话封面的异形轮廓。用种子生成轻微起伏的圆角多边形，避免列表封面整齐划一。 */
 internal class OrganicShape(
@@ -78,7 +90,7 @@ internal class OrganicShape(
         val points = List(lobes) { index ->
             val angle = (2.0 * PI * index / lobes) - PI / 2.0
             val variation = ((seed ushr (index * 3 % 24)) and 0x7) / 7f
-            val radius = 0.84f + 0.12f * variation
+            val radius = 0.72f + 0.26f * variation
             androidx.compose.ui.geometry.Offset(
                 x = centerX + (cos(angle) * centerX * radius).toFloat(),
                 y = centerY + (sin(angle) * centerY * radius).toFloat(),
@@ -101,7 +113,7 @@ internal class OrganicShape(
 
 internal fun sessionCoverShape(id: String): Shape {
     val seed = id.hashCode()
-    return OrganicShape(seed = seed, lobes = 6 + abs(seed) % 4)
+    return OrganicShape(seed = seed, lobes = 5 + abs(seed) % 4)
 }
 
 internal fun isVideoFile(path: String?): Boolean {
@@ -113,22 +125,26 @@ internal fun isVideoFile(path: String?): Boolean {
 @Composable
 internal fun MediaLargeTopBar(
     title: String,
-    onBack: () -> Unit,
+    onNavigate: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
+    navigationIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
+    circularNavigation: Boolean = true,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     LargeTopAppBar(
         title = { Text(text = title) },
         navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-            }
+            NavigationButton(
+                onClick = onNavigate,
+                icon = navigationIcon,
+                circular = circularNavigation,
+            )
         },
         actions = actions,
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.background,
+            scrolledContainerColor = MaterialTheme.colorScheme.background,
         ),
     )
 }
@@ -138,40 +154,125 @@ internal fun MediaLargeTopBar(
 internal fun MediaSmallTopBar(
     title: String,
     subtitle: String? = null,
-    onBack: () -> Unit,
+    onNavigate: () -> Unit,
+    navigationIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
+    circularNavigation: Boolean = true,
+    titleLeading: (@Composable () -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
         title = {
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (subtitle != null) {
+            Row {
+                if (titleLeading != null) {
+                    titleLeading()
+                    Spacer(Modifier.size(8.dp))
+                }
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
+                    if (subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
             }
         },
         navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-            }
+            NavigationButton(
+                onClick = onNavigate,
+                icon = navigationIcon,
+                circular = circularNavigation,
+            )
         },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.background,
+            scrolledContainerColor = MaterialTheme.colorScheme.background,
         ),
     )
+}
+
+@Composable
+private fun NavigationButton(
+    onClick: () -> Unit,
+    icon: ImageVector,
+    circular: Boolean,
+) {
+    if (circular) {
+        Surface(
+            onClick = onClick,
+            modifier = Modifier.size(48.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))
+            }
+        }
+    } else {
+        IconButton(onClick = onClick) {
+            Icon(icon, contentDescription = null)
+        }
+    }
+}
+
+internal fun MediaGenerationProviderSetting.logoTypeId(): String = when (this) {
+    is MediaGenerationProviderSetting.OpenAI -> "OPENAI"
+    is MediaGenerationProviderSetting.Aliyun -> "ALIYUN"
+    is MediaGenerationProviderSetting.Volcengine -> "DOUBAO"
+    is MediaGenerationProviderSetting.MiniMax -> "MINIMAX"
+    is MediaGenerationProviderSetting.OpenRouter -> "OPENROUTER"
+}
+
+@Composable
+internal fun ProviderLogo(
+    provider: MediaGenerationProviderSetting,
+    size: Dp = 32.dp,
+    modifier: Modifier = Modifier,
+    withContainer: Boolean = true,
+) {
+    val context = LocalContext.current
+    val path = remember(provider.id, provider.logoTypeId()) {
+        ProviderLogoLoader.findLogoAssetPath(context, provider.logoTypeId())
+    }
+    val painter = if (path != null) {
+        rememberAssetLogoPainter(assetPath = path, size = size)
+    } else {
+        null
+    }
+    Surface(
+        modifier = modifier.size(size),
+        shape = CircleShape,
+        color = if (withContainer) {
+            MaterialTheme.colorScheme.surfaceContainerHighest
+        } else {
+            Color.Transparent
+        },
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize().padding(if (withContainer) 5.dp else 0.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (painter != null) {
+                Image(painter = painter, contentDescription = null, modifier = Modifier.fillMaxSize())
+            } else {
+                Text(
+                    text = provider.typeLabel().take(1),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -187,7 +288,7 @@ internal fun SessionLeading(
         modifier = modifier
             .size(52.dp)
             .clip(shape)
-            .background(MaterialTheme.colorScheme.secondaryContainer),
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
         contentAlignment = Alignment.Center,
     ) {
         when {
@@ -203,12 +304,23 @@ internal fun SessionLeading(
                 contentScale = ContentScale.Crop,
             )
 
-            else -> Icon(
-                imageVector = if (videoCover) Icons.Default.PlayArrow else Icons.Default.Image,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                modifier = Modifier.size(24.dp),
-            )
+            else -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.Image,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.size(22.dp),
+                )
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(10.dp)
+                        .size(12.dp),
+                )
+            }
         }
     }
 }
@@ -246,17 +358,13 @@ internal fun MediaThumbnail(
 
 @Composable
 internal fun sessionMetaText(session: MediaCreationSessionEntity): String {
-    val relativeTime = remember(session.updatedAt) {
-        DateUtils.getRelativeTimeSpanString(
-            session.updatedAt,
-            Date().time,
-            DateUtils.MINUTE_IN_MILLIS,
-        ).toString()
+    val time = remember(session.updatedAt) {
+        SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(session.updatedAt))
     }
     return if (session.activeCount > 0) {
-        stringResource(R.string.media_creation_active_meta, session.activeCount, relativeTime)
+        stringResource(R.string.media_creation_active_meta, session.nodeCount, time)
     } else {
-        "${stringResource(R.string.media_creation_items_count, session.nodeCount)} · $relativeTime"
+        "${stringResource(R.string.media_creation_items_count, session.nodeCount)} · $time"
     }
 }
 
