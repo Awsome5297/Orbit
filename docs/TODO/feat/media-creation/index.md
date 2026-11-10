@@ -33,6 +33,7 @@ For_Agent: 媒体创作完整对齐的分阶段实施记录
 - [x] OpenAI 图片生成/编辑适配器。
 - [x] 媒体供应商配置页（含 OpenAI、Aliyun、Volcengine、MiniMax、OpenRouter 配置）。
 - [x] 会话详情生成、结果落盘、历史展示与删除。
+- [x] 修正 CI 编译：MediaKind 导入与 OkHttp Headers 扩展。
 - [ ] 参考图编辑 UI。
 - [ ] 失败重试与中断恢复。
 

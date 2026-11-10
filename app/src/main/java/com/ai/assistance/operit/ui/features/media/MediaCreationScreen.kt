@@ -61,7 +61,7 @@ import com.ai.assistance.operit.data.model.MediaCreationRecordEntity
 import com.ai.assistance.operit.data.preferences.MediaGenerationPreferences
 import com.ai.assistance.operit.data.preferences.MediaGenerationSettings
 import kotlinx.coroutines.launch
-import okhttp3.Headers
+import okhttp3.Headers.Companion.toHeaders
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -307,7 +307,7 @@ private fun download(
     val headerValues = provider.downloadHeaders(url)
     val request = Request.Builder()
         .url(url)
-        .apply { if (headerValues.isNotEmpty()) headers(Headers.of(headerValues)) }
+        .apply { if (headerValues.isNotEmpty()) headers(headerValues.toHeaders()) }
         .build()
     client.newCall(request).execute().use { response ->
         if (!response.isSuccessful) return null

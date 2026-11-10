@@ -6,7 +6,7 @@ import com.ai.assistance.operit.data.model.MediaCreationNodeEntity
 import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
 import com.ai.assistance.operit.data.model.MediaCreationRecordEntity
 import com.ai.assistance.operit.data.model.MediaCreationSessionEntity
-import com.ai.assistance.operit.data.model.MediaKind
+import com.ai.assistance.mediagen.model.MediaKind
 import kotlinx.coroutines.flow.Flow
 import java.io.File
 import java.util.UUID
