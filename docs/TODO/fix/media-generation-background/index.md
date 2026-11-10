@@ -25,6 +25,9 @@ For_Agent: 修复媒体生成协程绑定页面导致退出即失败的问题
 ## 验证
 
 - 静态检查生成调用、服务声明、通知资源和数据库状态更新。
-- 按项目规则不在本地执行构建或测试，编译与运行验证交给 CI 和真机。
+- 本地未执行构建或测试。
+- GitHub Actions `Build`（`assembleDebug`）通过：[42842530158](https://github.com/Awsome5297/Orbit/actions/runs/42842530158)
+- GitHub Actions `Android Tests` 通过：[42842540239](https://github.com/Awsome5297/Orbit/actions/runs/42842540239)
+- 仍需真机验证：生成中退出创作页、切后台、重新进入页面，以及强制停止后的“生成已中断”记录。
 
 [DONE]
