@@ -42,6 +42,7 @@ private val SettingsScreenScrollPosition = mutableStateOf(0)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+        navigateToAppPermissions: () -> Unit,
         navigateToToolPermissions: () -> Unit,
         navigateToModelConfig: () -> Unit,
         navigateToThemeSettings: () -> Unit,
@@ -81,6 +82,13 @@ fun SettingsScreen(
                         icon = Icons.Default.Security,
                         containerColor = cardContainerColor
                 ) {
+                        CompactSettingsItem(
+                                title = stringResource(id = R.string.settings_app_permissions),
+                                subtitle = stringResource(id = R.string.settings_app_permissions_subtitle),
+                                icon = Icons.Default.Security,
+                                onClick = navigateToAppPermissions
+                        )
+
                         CompactSettingsItem(
                                 title = stringResource(id = R.string.settings_tool_permissions),
                                 subtitle = stringResource(id = R.string.settings_tool_permissions_subtitle),

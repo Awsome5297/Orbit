@@ -682,6 +682,7 @@ sealed class Screen(
                 onGestureConsumed: (Boolean) -> Unit
         ) {
             SettingsScreen(
+                    navigateToAppPermissions = { navigateTo(ShizukuCommands) },
                     navigateToToolPermissions = { navigateTo(ToolPermission) },
                     navigateToModelConfig = { navigateTo(ModelConfig) },
                     navigateToThemeSettings = { navigateTo(ThemeSettings) },

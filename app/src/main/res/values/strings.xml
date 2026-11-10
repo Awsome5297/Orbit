@@ -812,6 +812,8 @@
     <string name="settings_auto_accessibility_desc">关闭后需每次打开软件手动授权</string>
 
     <string name="settings_section_permissions">权限与安全</string>
+    <string name="settings_app_permissions">应用权限</string>
+    <string name="settings_app_permissions_subtitle">Shizuku、Root、无障碍与悬浮窗权限</string>
     <string name="settings_tool_permissions">工具权限设置</string>
     <string name="settings_tool_permissions_desc">配置AI助手工具的权限级别，可以设置为自动允许、询问或禁止</string>
     <string name="settings_configure_permissions">配置工具权限</string>

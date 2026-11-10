@@ -873,6 +873,8 @@
     <string name="settings_auto_accessibility_desc">When disabled, manual authorization is required each time the app is opened</string>
 
     <string name="settings_section_permissions">Permissions and Security</string>
+    <string name="settings_app_permissions">App permissions</string>
+    <string name="settings_app_permissions_subtitle">Shizuku, Root, accessibility and overlay permissions</string>
     <string name="settings_tool_permissions">Tool Permission Settings</string>
     <string name="settings_tool_permissions_desc">Configure permission levels for AI assistant tools, can be set to auto-allow, ask, or deny</string>
     <string name="settings_configure_permissions">Configure Permissions</string>
