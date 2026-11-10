@@ -140,7 +140,7 @@ internal fun MediaSketchDialog(
     }
 
     fun commit(next: List<SketchStroke>) {
-        undoStack = undoStack + strokes
+        undoStack = undoStack + listOf(strokes)
         redoStack = emptyList()
         strokes = next
     }
@@ -148,7 +148,7 @@ internal fun MediaSketchDialog(
     fun undo() {
         currentPoints = emptyList()
         if (undoStack.isNotEmpty()) {
-            redoStack = redoStack + strokes
+            redoStack = redoStack + listOf(strokes)
             strokes = undoStack.last()
             undoStack = undoStack.dropLast(1)
         }
@@ -157,7 +157,7 @@ internal fun MediaSketchDialog(
     fun redo() {
         currentPoints = emptyList()
         if (redoStack.isNotEmpty()) {
-            undoStack = undoStack + strokes
+            undoStack = undoStack + listOf(strokes)
             strokes = redoStack.last()
             redoStack = redoStack.dropLast(1)
         }
@@ -422,7 +422,7 @@ internal fun MediaSketchDialog(
                                         } else {
                                             val snapshot = eraseSnapshot
                                             if (snapshot != null && strokes != snapshot) {
-                                                undoStack = undoStack + snapshot
+                                                undoStack = undoStack + listOf(snapshot)
                                                 redoStack = emptyList()
                                             }
                                             eraseSnapshot = null
