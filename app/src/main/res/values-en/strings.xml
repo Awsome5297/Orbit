@@ -57,6 +57,11 @@
     <string name="media_creation_sketch_discard_message">Your drawing will be lost after closing.</string>
     <string name="media_creation_sketch_image_load_failed">Could not read this image</string>
     <string name="media_creation_sketch_export_failed">Could not save the sketch</string>
+    <string name="media_generation_notification_channel">Media generation</string>
+    <string name="media_generation_notification_channel_description">Keep generating images or videos in the background</string>
+    <string name="media_generation_notification_title">Generating media</string>
+    <string name="media_generation_notification_text">Results will be saved to the current session</string>
+    <string name="media_generation_interrupted">Generation interrupted</string>
     <string name="media_creation_role_reference">Reference</string>
     <string name="media_creation_role_first_frame">First frame</string>
     <string name="media_creation_role_last_frame">Last frame</string>

@@ -65,6 +65,11 @@
     <string name="media_creation_sketch_discard_message">关闭后画的内容不会保留。</string>
     <string name="media_creation_sketch_image_load_failed">无法读取这张图片</string>
     <string name="media_creation_sketch_export_failed">草图保存失败</string>
+    <string name="media_generation_notification_channel">媒体生成</string>
+    <string name="media_generation_notification_channel_description">在后台继续生成图片或视频</string>
+    <string name="media_generation_notification_title">正在生成媒体内容</string>
+    <string name="media_generation_notification_text">完成后会保存在当前会话</string>
+    <string name="media_generation_interrupted">生成已中断</string>
     <string name="media_creation_role_reference">参考图</string>
     <string name="media_creation_role_first_frame">首帧</string>
     <string name="media_creation_role_last_frame">尾帧</string>

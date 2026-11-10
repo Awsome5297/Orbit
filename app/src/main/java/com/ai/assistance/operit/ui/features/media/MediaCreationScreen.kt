@@ -96,20 +96,14 @@ import coil.compose.AsyncImage
 import com.ai.assistance.mediagen.model.ImageRole
 import com.ai.assistance.mediagen.model.MediaGenerationInput
 import com.ai.assistance.mediagen.model.MediaGenerationModel
-import com.ai.assistance.mediagen.model.MediaGenerationRequest
 import com.ai.assistance.mediagen.model.MediaGenerationStatus
 import com.ai.assistance.mediagen.model.MediaInputKind
 import com.ai.assistance.mediagen.model.MediaKind
-import com.ai.assistance.mediagen.provider.MediaGenerationManager
 import com.ai.assistance.mediagen.provider.MediaGenerationProviderSetting
 import com.ai.assistance.mediagen.provider.capabilities
-import com.ai.assistance.mediagen.provider.providers.aliyun.AliyunMediaGenerationProvider
-import com.ai.assistance.mediagen.provider.providers.minimax.MiniMaxMediaGenerationProvider
-import com.ai.assistance.mediagen.provider.providers.openai.OpenAIMediaGenerationProvider
-import com.ai.assistance.mediagen.provider.providers.openrouter.OpenRouterMediaGenerationProvider
-import com.ai.assistance.mediagen.provider.providers.volcengine.VolcengineMediaGenerationProvider
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.media.MediaCreationRepository
+import com.ai.assistance.operit.data.media.MediaGenerationRunner
 import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
 import com.ai.assistance.operit.data.model.MediaCreationRecordEntity
 import com.ai.assistance.operit.data.preferences.MediaGenerationPreferences
@@ -126,12 +120,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import okhttp3.Headers.Companion.toHeaders
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
 import java.util.UUID
-import java.util.concurrent.TimeUnit
 
 private data class MediaPreview(val file: File, val isVideo: Boolean)
 
@@ -150,6 +140,9 @@ fun MediaCreationScreen(
     val records by repository.observeRecords(sessionId).collectAsState(initial = emptyList())
     val recentOutputs by repository.observeRecentOutputs(sessionId).collectAsState(initial = emptyList())
     val scope = rememberCoroutineScope()
+    val runner = remember(context) { MediaGenerationRunner.getInstance(context) }
+    val activeSessions by runner.activeSessions.collectAsState()
+    val generating = sessionId in activeSessions
     val listState = rememberLazyListState()
     val isCurrentScreen = LocalIsCurrentScreen.current
     val setScreenSoftInputMode = LocalSetScreenSoftInputMode.current
@@ -160,16 +153,6 @@ fun MediaCreationScreen(
             setScreenSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             setUseScreenImePadding(true)
         }
-    }
-    val client = remember { OkHttpClient.Builder().readTimeout(10, TimeUnit.MINUTES).build() }
-    val manager = remember(client) {
-        MediaGenerationManager(
-            OpenAIMediaGenerationProvider(client),
-            AliyunMediaGenerationProvider(client),
-            VolcengineMediaGenerationProvider(client),
-            MiniMaxMediaGenerationProvider(client),
-            OpenRouterMediaGenerationProvider(client),
-        )
     }
     val json = remember { Json { ignoreUnknownKeys = true; encodeDefaults = true } }
     val generationModels = settings.providers.flatMap { provider ->
@@ -185,7 +168,6 @@ fun MediaCreationScreen(
 
     var selected by remember { mutableStateOf<Pair<MediaGenerationProviderSetting, MediaGenerationModel>?>(null) }
     var prompt by remember { mutableStateOf("") }
-    var generating by remember { mutableStateOf(false) }
     var preview by remember { mutableStateOf<MediaPreview?>(null) }
     var deleteTarget by remember { mutableStateOf<MediaCreationRecordEntity?>(null) }
     var showModelPicker by remember { mutableStateOf(false) }
@@ -221,6 +203,13 @@ fun MediaCreationScreen(
     LaunchedEffect(records.size) {
         if (records.isNotEmpty()) listState.animateScrollToItem(records.lastIndex)
     }
+    LaunchedEffect(sessionId, runner) {
+        runner.completions.collect { completion ->
+            if (completion.sessionId == sessionId && completion.success) {
+                prompt = ""
+            }
+        }
+    }
 
     fun startGeneration(
         provider: MediaGenerationProviderSetting,
@@ -228,62 +217,18 @@ fun MediaCreationScreen(
         text: String,
         inputs: List<MediaGenerationInput>,
     ) {
-        if (text.isBlank() || generating) return
+        if (text.isBlank()) return
         val capabilities = provider.capabilities(model.kind) ?: return
         if (capabilities.requiresRemoteInputs && inputs.isNotEmpty()) return
-        generating = true
-        scope.launch {
-            val recordId = repository.createRecord(
-                sessionId = sessionId,
-                providerId = provider.id,
-                providerName = provider.name,
-                modelId = model.modelId,
-                kind = model.kind,
-                prompt = text,
-                inputs = inputs,
-            )
-            try {
-                manager.generate(
-                    setting = provider,
-                    model = model,
-                    request = MediaGenerationRequest(
-                        prompt = text,
-                        inputs = inputs,
-                        count = count,
-                        resolution = resolution,
-                    ),
-                ).collect { task ->
-                    repository.finishRecord(recordId, task.status.name, task.id, task.error)
-                    if (task.status == MediaGenerationStatus.SUCCEEDED) {
-                        val directory = repository.recordDir(sessionId, recordId)
-                        task.outputs.forEachIndexed { index, output ->
-                            val bytes = output.data ?: output.url?.let { url ->
-                                withContext(Dispatchers.IO) { download(client, provider, url) }
-                            } ?: return@forEachIndexed
-                            val mimeType = output.mimeType ?: "image/png"
-                            val extension = mimeType.substringAfter('/', "png").substringBefore('+')
-                            val file = File(directory, "output_${index}.$extension")
-                            withContext(Dispatchers.IO) { file.writeBytes(bytes) }
-                            repository.saveOutput(
-                                sessionId = sessionId,
-                                recordId = recordId,
-                                output = MediaCreationOutputEntity(
-                                    id = UUID.randomUUID().toString(),
-                                    recordId = recordId,
-                                    path = file.absolutePath,
-                                    mimeType = mimeType,
-                                ),
-                            )
-                        }
-                    }
-                }
-                prompt = ""
-            } catch (error: Exception) {
-                repository.finishRecord(recordId, MediaGenerationStatus.FAILED.name, error = error.message)
-            } finally {
-                generating = false
-            }
-        }
+        runner.start(
+            sessionId = sessionId,
+            provider = provider,
+            model = model,
+            prompt = text,
+            inputs = inputs,
+            count = count,
+            resolution = resolution,
+        )
     }
 
     fun generate() {
@@ -1332,20 +1277,4 @@ private fun copyToCache(context: Context, uri: Uri): String {
         file.outputStream().use { target -> source.copyTo(target) }
     }
     return file.absolutePath
-}
-
-private fun download(
-    client: OkHttpClient,
-    provider: MediaGenerationProviderSetting,
-    url: String,
-): ByteArray? {
-    val headerValues = provider.downloadHeaders(url)
-    val request = Request.Builder()
-        .url(url)
-        .apply { if (headerValues.isNotEmpty()) headers(headerValues.toHeaders()) }
-        .build()
-    client.newCall(request).execute().use { response ->
-        if (!response.isSuccessful) return null
-        return response.body?.bytes()
-    }
 }

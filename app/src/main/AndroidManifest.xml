@@ -344,6 +344,13 @@
             </intent-filter>
         </service>
 
+        <!-- 媒体生成前台服务 - 页面退出后在后台继续生成 -->
+        <service
+            android:name=".services.MediaGenerationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <!-- AI 前台服务 - 保持网络连接稳定 -->
         <service
             android:name=".api.chat.AIForegroundService"

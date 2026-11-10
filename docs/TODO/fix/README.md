@@ -46,6 +46,7 @@
 - [GREP 上下文行号与 SSE 关闭异常](grep-line-numbers-sse-close/index.md) · `grep-line-numbers-sse-close`
 - [对话历史长列表滚动重叠](history-scroll-placement/index.md) · `history-scroll-placement`
 - [界面与媒体交互修复](interface-media-polish/index.md) · `interface-media-polish`
+- [媒体生成脱离页面生命周期](media-generation-background/index.md) · `media-generation-background`
 - [多工具交错参数完整性](interleaved-tool-call-arguments/index.md) · `interleaved-tool-call-arguments`
 - [中断回合统计修复](issue-741-interrupted-turn-stats/index.md) · `issue-741-interrupted-turn-stats`
 - [Issue 853 待发送消息队列](issue-853-pending-message-queue/index.md) · `issue-853-pending-message-queue`

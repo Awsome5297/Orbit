@@ -144,6 +144,28 @@ class MediaCreationRepository private constructor(context: Context) {
 
     suspend fun getRecord(recordId: String): MediaCreationRecordEntity? = dao.getRecord(recordId)
 
+    /**
+     * 进程重启后，之前的生成协程已经不存在，把遗留的活动记录标记为中断。
+     * [before] 用进程启动时间隔离本轮新创建的任务。
+     */
+    suspend fun failInterruptedRecords(before: Long, error: String) {
+        val records = dao.getActiveRecords().filter { it.createdAt < before }
+        if (records.isEmpty()) return
+        val now = System.currentTimeMillis()
+        records.forEach { record ->
+            dao.updateRecordStatus(
+                recordId = record.id,
+                status = "FAILED",
+                taskId = record.taskId,
+                error = error,
+                updatedAt = now,
+            )
+        }
+        records.map { it.sessionId }.distinct().forEach { sessionId ->
+            dao.updateSessionCounts(sessionId, now)
+        }
+    }
+
     suspend fun deleteRecord(sessionId: String, recordId: String) {
         val record = dao.getRecord(recordId) ?: return
         dao.deleteRecord(recordId)
