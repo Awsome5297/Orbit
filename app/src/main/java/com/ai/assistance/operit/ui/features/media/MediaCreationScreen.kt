@@ -59,6 +59,7 @@ import com.ai.assistance.mediagen.model.MediaGenerationStatus
 import com.ai.assistance.mediagen.model.MediaKind
 import com.ai.assistance.mediagen.provider.MediaGenerationManager
 import com.ai.assistance.mediagen.provider.MediaGenerationProviderSetting
+import com.ai.assistance.mediagen.provider.providers.aliyun.AliyunMediaGenerationProvider
 import com.ai.assistance.mediagen.provider.providers.openai.OpenAIMediaGenerationProvider
 import com.ai.assistance.mediagen.provider.providers.openrouter.OpenRouterMediaGenerationProvider
 import com.ai.assistance.operit.R
@@ -94,12 +95,14 @@ fun MediaCreationScreen(
     val manager = remember(client) {
         MediaGenerationManager(
             OpenAIMediaGenerationProvider(client),
+            AliyunMediaGenerationProvider(client),
             OpenRouterMediaGenerationProvider(client),
         )
     }
     val generationModels = settings.providers.flatMap { provider ->
         provider.models.mapNotNull { model ->
             val supported = (provider is MediaGenerationProviderSetting.OpenAI && model.kind == MediaKind.IMAGE) ||
+                provider is MediaGenerationProviderSetting.Aliyun ||
                 provider is MediaGenerationProviderSetting.OpenRouter
             if (supported) provider to model else null
         }
