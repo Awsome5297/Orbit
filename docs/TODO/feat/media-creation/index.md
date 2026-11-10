@@ -69,7 +69,7 @@ For_Agent: 媒体创作完整对齐的分阶段实施记录
 - [ ] 生成结果备份与恢复。
 - [ ] 供应商请求映射单测与完整文档。
 
-## 阶段 7：界面重构（进行中）
+## 阶段 7：界面重构
 
 参照 rikkahub 的 Material 3 Expressive 结构重做媒体创作三页，同时修正外层与页面内顶栏重复的问题。
 
@@ -78,18 +78,20 @@ For_Agent: 媒体创作完整对齐的分阶段实施记录
 - [x] 创作页改为时间线结果卡与悬浮输入区，补齐素材缩略图、状态、保存/分享/重试。
 - [x] 服务设置改为供应商列表与详情页，模型改为结构化编辑。
 - [x] 数据层刷新会话封面与活动任务数。
-- [ ] 单元测试、`assembleDebug` 与分支推送。
+- [x] 单元测试、`assembleDebug` 与分支推送。
+
+GitHub Actions 结果：Android Tests 通过，Build（`assembleDebug`）通过，产物 `operit-android-21`。
 
 以下交互作为后续增量，不在本次界面重构内：版本切换、多选批量保存/删除、供应商拖动排序、连接测试与素材存储分页。
 
 ### 设计约束
 
-- 当前 Material3 版本为 1.4.0，`LargeFlexibleTopAppBar` 可用；`MaterialShapes`、`ContainedLoadingIndicator`、`HorizontalFloatingToolbar` 用自绘组件替代。
+- 当前 Material3 版本为 1.4.0，Flexible 顶栏与 Expressive 注解为 internal，沿用公开的 `LargeTopAppBar`；`MaterialShapes`、`ContainedLoadingIndicator`、`HorizontalFloatingToolbar` 用自绘组件替代。
 - 结果缩略图沿用紧凑上限，点击后全屏预览。
 - 只参考 rikkahub 的布局与交互，不复制 AGPL 源码。
 
 ## 验证
 
-- `./gradlew :app:compileDebugKotlin`
-- Room 迁移与设置序列化单测
-- 手动检查工具菜单入口、会话创建/删除、返回栈
+- GitHub Actions `Android Tests` 通过。
+- GitHub Actions `Build`（`assembleDebug`）通过，产物 `operit-android-21`。
+- 本地不执行 Gradle 构建，构建与测试统一由 GitHub Actions 完成。
