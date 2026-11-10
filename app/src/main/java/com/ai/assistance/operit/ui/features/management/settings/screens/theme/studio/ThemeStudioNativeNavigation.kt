@@ -50,10 +50,10 @@ internal fun StudioNavigationPreview(state: ThemeStudioState) {
             ) {
                 ThemeScriptSurface("navigation", drawFill = false) {
                     ChatSidebarBody(
-                        brandName = "Operit", appearance = appearance, pluginEntries = listOf(plugin), selectedItem = null,
-                        selectedRouteId = "theme-preview", permissionBadgeText = stringResource(R.string.sidebar_status_normal),
+                        brandName = "Operit", appearance = appearance, pluginEntries = listOf(plugin),
+                        selectedRouteId = "theme-preview",
                         characterName = state.targetName, avatar = values.string("custom_ai_avatar_uri"),
-                        onNavItemClick = {}, onNavigationEntryClick = {}, onOpenCharacterSettings = {},
+                        onNavigationEntryClick = {}, onOpenCharacterSettings = {},
                         onOpenCharacterSelector = {}, onCloseSidebar = {},
                         bottomContent = { CompactNavigationDrawerItem(Icons.Default.Settings, stringResource(R.string.studio_group_settings), true, appearance, {}) },
                         historyContent = {

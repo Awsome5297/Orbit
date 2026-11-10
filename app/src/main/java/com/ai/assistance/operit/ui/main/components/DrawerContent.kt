@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -40,7 +42,6 @@ import com.ai.assistance.operit.ui.theme.script.text.ThemeText as Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -52,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -62,58 +64,22 @@ import androidx.compose.ui.unit.dp
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.ui.features.conversation.chat.modules.sidebar.ChatSidebarContent
 import com.ai.assistance.operit.ui.features.conversation.chat.modules.sidebar.SidebarButtonSurface
+import com.ai.assistance.operit.ui.components.menu.WorkbenchDropdownMenu
 import com.ai.assistance.operit.ui.features.conversation.chat.modules.sidebar.LocalRunMainChatAction
 import com.ai.assistance.operit.ui.features.conversation.chat.modules.sidebar.LocalMainChatViewModel
 import com.ai.assistance.operit.ui.features.conversation.chat.modules.sidebar.LocalMainChatSidebarState
 import com.ai.assistance.operit.ui.theme.LocalThemePreferenceSnapshot
 import com.ai.assistance.operit.core.tools.runtime.AIToolHandler
 import com.ai.assistance.operit.core.tools.packTool.runtime.PackageManager
-import com.ai.assistance.operit.core.tools.permissions.PermissionCapabilityResolver
-import com.ai.assistance.operit.core.tools.permissions.AndroidPermissionLevel
 
 import com.ai.assistance.operit.data.preferences.UserPreferencesManager
-import com.ai.assistance.operit.data.preferences.androidPermissionPreferences
 import com.ai.assistance.operit.ui.common.NavItem
 import com.ai.assistance.operit.ui.main.screens.ScreenRouteRegistry
 import com.ai.assistance.operit.ui.main.navigation.NavigationEntrySpec
 import com.ai.assistance.operit.ui.main.screens.Screen
 import com.ai.assistance.operit.ui.theme.liquidGlass
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
-private data class SidebarPermissionStatus(
-        val badgeTextResId: Int
-)
-
-private suspend fun resolveSidebarPermissionStatus(
-        context: android.content.Context,
-        preferredPermissionLevel: AndroidPermissionLevel?
-): SidebarPermissionStatus {
-        return when (preferredPermissionLevel) {
-                null,
-                AndroidPermissionLevel.STANDARD ->
-                        SidebarPermissionStatus(
-                                badgeTextResId = R.string.sidebar_status_normal
-                        )
-                AndroidPermissionLevel.ADMIN -> {
-                        val capabilities = PermissionCapabilityResolver.statusUiSnapshot(context, preferredPermissionLevel)
-                        SidebarPermissionStatus(
-                                badgeTextResId = if (capabilities.canUseAccessibility || capabilities.canUseShizuku)
-                                        R.string.sidebar_status_normal else R.string.unauthorized
-                        )
-                }
-                AndroidPermissionLevel.ROOT -> {
-                        val capabilities = PermissionCapabilityResolver.statusShellSnapshot(context, preferredPermissionLevel)
-                        SidebarPermissionStatus(
-                                badgeTextResId = if (capabilities.canUseRoot)
-                                        R.string.sidebar_status_normal else R.string.unauthorized
-                        )
-                }
-        }
-}
-
 /** Content for the expanded navigation drawer */
 @Composable
 fun DrawerContent(
@@ -143,8 +109,6 @@ fun DrawerContent(
                 userPreferencesManager.softwareIdentity.collectAsState(
                         initial = UserPreferencesManager.SOFTWARE_IDENTITY_OPERIT
                 )
-        val preferredPermissionLevel by
-                androidPermissionPreferences.preferredPermissionLevelFlow.collectAsState(initial = null)
         val drawerBrandName =
                 if (softwareIdentity == UserPreferencesManager.SOFTWARE_IDENTITY_LINGSHU) {
                         context.getString(R.string.software_identity_option_lingshu)
@@ -156,23 +120,6 @@ fun DrawerContent(
         val resolvedTopContentPadding =
                 topContentPadding ?:
                 WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        val permissionStatus by
-                produceState(
-                        initialValue =
-                                SidebarPermissionStatus(
-                                        badgeTextResId = R.string.sidebar_status_normal
-                                ),
-                        selectedRouteId,
-                        preferredPermissionLevel
-                ) {
-                        value =
-                                withContext(Dispatchers.IO) {
-                                        resolveSidebarPermissionStatus(
-                                                context = context,
-                                                preferredPermissionLevel = preferredPermissionLevel
-                                        )
-                                }
-                }
         val handleScreenSelection: (Screen) -> Unit = { screen ->
                 dismissSidebarInput()
                 val shouldCloseBeforeNavigate =
@@ -221,10 +168,7 @@ fun DrawerContent(
             brandName = drawerBrandName,
             appearance = appearance,
             pluginEntries = pluginEntries,
-            permissionBadgeText = stringResource(permissionStatus.badgeTextResId),
-            selectedItem = selectedItem,
             selectedRouteId = selectedRouteId,
-            onNavItemClick = handleNavItemClick,
             onNavigationEntryClick = handleNavigationEntryClick,
             onOpenCharacterSettings = { handleScreenSelection(Screen.ModelPromptsSettings) },
             onCloseSidebar = closeSidebar,
@@ -421,15 +365,35 @@ private fun DrawerBottomShortcutRow(
                 else snapshot.themeMode == UserPreferencesManager.THEME_MODE_DARK
         val reveal = LocalThemeRevealController.current
         var toggleCenter by remember { mutableStateOf(Offset.Zero) }
+        var toolMenuExpanded by remember { mutableStateOf(false) }
         val nextMode = if (darkTheme) UserPreferencesManager.THEME_MODE_LIGHT else UserPreferencesManager.THEME_MODE_DARK
         Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
         ) {
-                BottomShortcutDrawerItem(Modifier.weight(1f), NavItem.Packages.icon,
-                        stringResource(NavItem.Packages.titleResId), selectedItem == NavItem.Packages,
-                        appearance, onClick = { onNavItemClick(NavItem.Packages) })
+                Box(Modifier.weight(1f)) {
+                        BottomShortcutDrawerItem(Modifier.fillMaxWidth(), Icons.Default.Build,
+                                stringResource(R.string.tool_menu),
+                                selectedItem == NavItem.Packages || selectedItem == NavItem.Workflow,
+                                appearance, onClick = { toolMenuExpanded = true })
+                        WorkbenchDropdownMenu(
+                                expanded = toolMenuExpanded,
+                                onDismissRequest = { toolMenuExpanded = false },
+                                minWidth = 180.dp,
+                                maxWidth = 220.dp,
+                                contentPadding = 4.dp,
+                        ) {
+                                ToolMenuItem(NavItem.Packages.icon, stringResource(NavItem.Packages.titleResId)) {
+                                        toolMenuExpanded = false
+                                        onNavItemClick(NavItem.Packages)
+                                }
+                                ToolMenuItem(NavItem.Workflow.icon, stringResource(NavItem.Workflow.titleResId)) {
+                                        toolMenuExpanded = false
+                                        onNavItemClick(NavItem.Workflow)
+                                }
+                        }
+                }
                 BottomShortcutDrawerItem(Modifier.weight(1f), NavItem.Settings.icon,
                         stringResource(NavItem.Settings.titleResId), selectedItem == NavItem.Settings,
                         appearance, onClick = { onNavItemClick(NavItem.Settings) })
@@ -446,6 +410,20 @@ private fun DrawerBottomShortcutRow(
                                         }
                                 }
                         })
+        }
+}
+
+@Composable
+private fun ToolMenuItem(icon: ImageVector, label: String, onClick: () -> Unit) {
+        Row(
+                modifier = Modifier.fillMaxWidth().height(40.dp).clip(RoundedCornerShape(8.dp))
+                        .clickable(onClick = onClick).padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+        ) {
+                Icon(icon, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurface)
+                Spacer(Modifier.width(8.dp))
+                Text(label, style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 }
 

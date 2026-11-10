@@ -52,10 +52,7 @@ internal fun ChatScreenShell(
                             brandName = stringResource(R.string.app_name),
                             appearance = appearance,
                             pluginEntries = emptyList(),
-                            selectedItem = null,
                             selectedRouteId = "embedded-chat",
-                            permissionBadgeText = "",
-                            onNavItemClick = {},
                             onNavigationEntryClick = {},
                             onOpenCharacterSettings = onOpenCharacterSettings,
                             onCloseSidebar = { scope.launch { drawer.close() } },
@@ -63,8 +60,6 @@ internal fun ChatScreenShell(
                             onCreateChat = runChatAction,
                             onSelectCharacter = viewModel::switchActiveCharacterTarget,
                             bottomContent = {},
-                            // 嵌入宿主只展示对话与角色管理，应用级导航仍由外层宿主持有。
-                            showNavigationShortcuts = false,
                         )
                     }
                 }

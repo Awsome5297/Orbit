@@ -68,6 +68,7 @@
 - [插件运行监测](plugin_runtime_monitor_20260915/index.md) · `plugin_runtime_monitor_20260915`
 - [Romanian Locale](romanian_locale/index.md) · `romanian_locale`
 - [模型设置与工具修复统一联调](settings-tools-integration/index.md) · `settings-tools-integration`
+- [侧栏工具菜单与权限迁移](sidebar-tool-menu/index.md) · `sidebar-tool-menu`
 - [语音服务配置交互设计](speech-services-design/index.md) · `speech-services-design`
 - [语音服务原生工作区](speech-services-workbench/index.md)：按已选 HTML 设计重构 TTS、STT 和唤醒配置 · `speech-services-workbench`
 - [语音服务独立配置档案](speech_service_profiles_20260810/index.md) · `speech_service_profiles_20260810`

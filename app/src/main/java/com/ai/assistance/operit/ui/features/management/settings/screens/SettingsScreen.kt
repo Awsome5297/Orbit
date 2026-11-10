@@ -74,6 +74,20 @@ fun SettingsScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .verticalScroll(scrollState)
         ) {
+                // ======= 权限与安全 =======
+                SettingsSection(
+                        title = stringResource(id = R.string.settings_section_permissions),
+                        icon = Icons.Default.Security,
+                        containerColor = cardContainerColor
+                ) {
+                        CompactSettingsItem(
+                                title = stringResource(id = R.string.settings_tool_permissions),
+                                subtitle = stringResource(id = R.string.settings_tool_permissions_subtitle),
+                                icon = Icons.Default.AdminPanelSettings,
+                                onClick = navigateToToolPermissions
+                        )
+                }
+
                 // ======= 个性化配置 =======
                 SettingsSection(
                         title = stringResource(id = R.string.settings_section_personalization),
@@ -142,19 +156,12 @@ fun SettingsScreen(
                         )
                 }
 
-                // ======= 数据和权限 =======
+                // ======= 数据与备份 =======
                 SettingsSection(
-                        title = stringResource(id = R.string.settings_data_permissions),
-                        icon = Icons.Default.Security,
+                        title = stringResource(id = R.string.data_backup_title),
+                        icon = Icons.Default.CloudUpload,
                         containerColor = cardContainerColor
                 ) {
-                        CompactSettingsItem(
-                                title = stringResource(id = R.string.settings_tool_permissions),
-                                subtitle = stringResource(id = R.string.settings_tool_permissions_subtitle),
-                                icon = Icons.Default.AdminPanelSettings,
-                                onClick = navigateToToolPermissions
-                        )
-
                         CompactSettingsItem(
                                 title = stringResource(id = R.string.data_backup_title),
                                 subtitle = stringResource(id = R.string.data_backup_settings_desc),

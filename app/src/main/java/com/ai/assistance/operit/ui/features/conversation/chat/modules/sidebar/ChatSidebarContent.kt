@@ -17,8 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -29,7 +27,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.ai.assistance.operit.R
 import com.ai.assistance.operit.data.character.ActivePrompt
 import com.ai.assistance.operit.data.preferences.UserPreferencesManager
-import com.ai.assistance.operit.ui.common.NavItem
 import com.ai.assistance.operit.ui.features.conversation.chat.modules.characters.CharacterSelectorContent
 import com.ai.assistance.operit.ui.features.conversation.chat.foundation.model.CharacterSelectorTarget
 import com.ai.assistance.operit.ui.components.menu.WorkbenchDropdownMenu
@@ -48,17 +45,13 @@ fun ChatSidebarContent(
     brandName: String,
     appearance: NavigationDrawerAppearance,
     pluginEntries: List<NavigationEntrySpec>,
-    selectedItem: NavItem?,
     selectedRouteId: String,
-    permissionBadgeText: String,
-    onNavItemClick: (NavItem) -> Unit,
     onNavigationEntryClick: (NavigationEntrySpec) -> Unit,
     onOpenCharacterSettings: () -> Unit,
     onCloseSidebar: () -> Unit,
     onRunChatAction: (() -> Unit) -> Unit,
     onCreateChat: (() -> Unit) -> Unit,
     onSelectCharacter: (CharacterSelectorTarget) -> Unit,
-    showNavigationShortcuts: Boolean = true,
     bottomContent: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -100,12 +93,9 @@ fun ChatSidebarContent(
         brandName = brandName,
         appearance = appearance,
         pluginEntries = pluginEntries,
-        selectedItem = selectedItem,
         selectedRouteId = selectedRouteId,
-        permissionBadgeText = permissionBadgeText,
         characterName = characterName,
         avatar = avatar,
-        onNavItemClick = onNavItemClick,
         onNavigationEntryClick = onNavigationEntryClick,
         onOpenCharacterSettings = onOpenCharacterSettings,
         onCloseSidebar = onCloseSidebar,
@@ -123,7 +113,6 @@ fun ChatSidebarContent(
                 },
             )
         },
-        showNavigationShortcuts = showNavigationShortcuts,
         historyContent = {
             FolderChatHistoryPanel(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -170,12 +159,9 @@ internal fun ChatSidebarBody(
     brandName: String,
     appearance: NavigationDrawerAppearance,
     pluginEntries: List<NavigationEntrySpec>,
-    selectedItem: NavItem?,
     selectedRouteId: String,
-    permissionBadgeText: String,
     characterName: String,
     avatar: String?,
-    onNavItemClick: (NavItem) -> Unit,
     onNavigationEntryClick: (NavigationEntrySpec) -> Unit,
     onOpenCharacterSettings: () -> Unit,
     onOpenCharacterSelector: () -> Unit,
@@ -184,7 +170,6 @@ internal fun ChatSidebarBody(
     characterSelectorExpanded: Boolean = false,
     onDismissCharacterSelector: () -> Unit = {},
     characterSelectorContent: @Composable () -> Unit = {},
-    showNavigationShortcuts: Boolean = true,
     historyContent: @Composable ColumnScope.() -> Unit,
 ) {
     val textColor = themeScriptContentColor("navigation", getTextColorForBackground(appearance.containerColor))
@@ -199,19 +184,6 @@ internal fun ChatSidebarBody(
             IconButton(onClick = onCloseSidebar, modifier = Modifier.size(32.dp)) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.app_content_collapse_sidebar),
                     tint = appearance.itemColor, modifier = Modifier.size(18.dp))
-            }
-        }
-        if (showNavigationShortcuts) {
-            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    SidebarNavigationItem(Modifier.weight(1f), Icons.Default.AdminPanelSettings,
-                        stringResource(R.string.sidebar_permission_short), appearance,
-                        selected = selectedItem == NavItem.ShizukuCommands, detail = permissionBadgeText,
-                        onClick = { onNavItemClick(NavItem.ShizukuCommands) })
-                    SidebarNavigationItem(Modifier.weight(1f), NavItem.Workflow.icon,
-                        stringResource(NavItem.Workflow.titleResId), appearance,
-                        selected = selectedItem == NavItem.Workflow, detail = stringResource(R.string.sidebar_workflow_description),
-                        onClick = { onNavItemClick(NavItem.Workflow) })
             }
         }
         Row(
@@ -265,39 +237,5 @@ internal fun ChatSidebarBody(
         }
         Spacer(Modifier.height(4.dp))
         bottomContent()
-    }
-}
-
-@Composable
-private fun SidebarNavigationItem(
-    modifier: Modifier,
-    icon: ImageVector,
-    label: String,
-    appearance: NavigationDrawerAppearance,
-    selected: Boolean = false,
-    detail: String? = null,
-    onClick: () -> Unit,
-) {
-    val color = if (selected) appearance.selectedContentColor else appearance.itemColor
-    SidebarButtonSurface(
-        onClick = onClick,
-        modifier = modifier.heightIn(min = 56.dp),
-        shape = RoundedCornerShape(12.dp),
-        appearance = appearance,
-        containerColor = if (selected) appearance.selectedContainerColor
-            else if (appearance.buttonLiquidGlassEnabled) appearance.buttonContainerColor else Color.Transparent,
-        contentColor = color,
-        selected = selected,
-    ) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(icon, null, tint = LocalContentColor.current, modifier = Modifier.size(18.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(label, style = MaterialTheme.typography.labelMedium, color = LocalContentColor.current,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (detail != null) Text(detail, style = MaterialTheme.typography.labelSmall,
-                    color = LocalContentColor.current.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-        }
     }
 }
