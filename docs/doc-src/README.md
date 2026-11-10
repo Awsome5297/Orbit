@@ -25,6 +25,7 @@ doc-src/
 - [Tool Stream Reconcile 方案](architecture/tool_stream_reconcile_plan.md)
 - [记忆候选评分公式](architecture/memory_candidate_scoring_formula.md)
 - [语音服务独立档案](architecture/speech_service_profiles.md)
+- [媒体创作草图编辑器](architecture/sketch_editor.md)
 
 ## 开发核心
 

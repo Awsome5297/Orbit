@@ -44,6 +44,7 @@
 - [Market Release Author Verification](market_release_author_verification/index.md) · `market_release_author_verification`
 - [MCP 标准配置传输导入](mcp_config_transport_import_20260731/index.md) · `mcp_config_transport_import_20260731`
 - [媒体创作](media-creation/index.md) · `media-creation`
+- [草图编辑器重设计](sketch-editor-redesign/index.md) · `sketch-editor-redesign`
 - [记忆空间入口与图谱交互设计](memory-space-design/index.md) · `memory-space-design`
 - [记忆提取附加规则](memory_extraction_custom_rules_20260807/index.md) · `memory_extraction_custom_rules_20260807`
 - [按时间段构建聊天记忆](memory_rebuild_time_range_20260912/index.md) · `memory_rebuild_time_range_20260912`

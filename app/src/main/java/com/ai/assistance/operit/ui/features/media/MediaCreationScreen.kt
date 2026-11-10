@@ -114,6 +114,7 @@ import com.ai.assistance.operit.data.model.MediaCreationOutputEntity
 import com.ai.assistance.operit.data.model.MediaCreationRecordEntity
 import com.ai.assistance.operit.data.preferences.MediaGenerationPreferences
 import com.ai.assistance.operit.data.preferences.MediaGenerationSettings
+import com.ai.assistance.operit.ui.features.media.sketch.MediaSketchDialog
 import com.ai.assistance.operit.ui.main.components.LocalIsCurrentScreen
 import com.ai.assistance.operit.ui.main.components.LocalSetScreenSoftInputMode
 import com.ai.assistance.operit.ui.main.components.LocalSetUseScreenImePadding
@@ -449,6 +450,7 @@ fun MediaCreationScreen(
     if (showSketch) {
         MediaSketchDialog(
             onDismiss = { showSketch = false },
+            aspectRatio = resolutionAspectRatio(resolution),
             onSave = { file ->
                 selectedInputs = selectedInputs + MediaGenerationInput(
                     kind = MediaInputKind.IMAGE,
@@ -1302,6 +1304,15 @@ private fun recordStatusLabel(status: String): String = stringResource(
 
 private fun String.isActiveStatus(): Boolean =
     this in setOf("PREPARING", "QUEUED", "RUNNING", "DOWNLOADING")
+
+private fun resolutionAspectRatio(resolution: String?): Float? {
+    val parts = resolution?.split('x') ?: return null
+    if (parts.size != 2) return null
+    val width = parts[0].trim().toIntOrNull() ?: return null
+    val height = parts[1].trim().toIntOrNull() ?: return null
+    if (width <= 0 || height <= 0) return null
+    return width.toFloat() / height
+}
 
 @Composable
 private fun roleLabel(role: ImageRole): String = stringResource(
