@@ -527,6 +527,8 @@ android {
         applicationId = "com.ai.assistance.operit"
         minSdk = 26
         targetSdk = 34
+        // 1.0.0 是新版本线，但 versionCode 必须继续高于已发布的 +24（80），
+        // 否则 Android 会拒绝覆盖安装；后续 1.0.0+n 从这里继续递增。
         versionCode = 81
         versionName = "1.0.0"
 
