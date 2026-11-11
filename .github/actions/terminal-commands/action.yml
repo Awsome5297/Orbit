@@ -8,7 +8,32 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Restore terminal command build cache
+      id: terminal-command-cache
+      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          tools/native_apply_patch/target
+          tools/web_chat_cli/target
+        key: terminal-commands-gnu-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/native_apply_patch/**/Cargo.toml', 'tools/native_apply_patch/Cargo.lock', 'tools/terminal_commands/rust-toolchain.toml', 'tools/native_apply_patch/**/*.rs', 'tools/web_chat_cli/Cargo.toml', 'tools/web_chat_cli/Cargo.lock', 'tools/web_chat_cli/**/*.rs') }}
+
+    - name: Check cached terminal command binaries
+      id: terminal-command-binaries
+      shell: bash
+      run: |
+        set -euo pipefail
+        apply_patch=tools/native_apply_patch/target/aarch64-unknown-linux-gnu/release/apply_patch
+        web_chat=tools/web_chat_cli/target/aarch64-unknown-linux-gnu/release/web-chat
+        if [[ -x "$apply_patch" && -x "$web_chat" ]]; then
+          echo 'ready=true' >> "$GITHUB_OUTPUT"
+        else
+          echo 'ready=false' >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Install Ubuntu ARM64 toolchain
+      if: steps.terminal-command-binaries.outputs.ready != 'true' || inputs.run-tests == 'true'
       shell: bash
       env:
         RUN_TERMINAL_TESTS: ${{ inputs.run-tests }}
@@ -20,17 +45,8 @@ runs:
         sudo apt-get update -qq
         sudo apt-get install -y --no-install-recommends "${packages[@]}"
 
-    - name: Restore terminal command build cache
-      uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          tools/native_apply_patch/target
-          tools/web_chat_cli/target
-        key: terminal-commands-gnu-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/native_apply_patch/**/Cargo.toml', 'tools/native_apply_patch/Cargo.lock', 'tools/terminal_commands/rust-toolchain.toml', 'tools/native_apply_patch/**/*.rs', 'tools/web_chat_cli/Cargo.toml', 'tools/web_chat_cli/Cargo.lock', 'tools/web_chat_cli/**/*.rs') }}
-
     - name: Build Ubuntu ARM64 terminal commands
+      if: steps.terminal-command-binaries.outputs.ready != 'true'
       shell: bash
       env:
         CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
@@ -42,12 +58,17 @@ runs:
         cargo "+$terminal_commands_rust" build \
           --manifest-path tools/native_apply_patch/Cargo.toml \
           --release --target aarch64-unknown-linux-gnu --locked
-        python3 tools/native_apply_patch/package_assets.py \
-          --binary tools/native_apply_patch/target/aarch64-unknown-linux-gnu/release/apply_patch \
-          --output app/build/generated/terminal-command-assets
         cargo "+$terminal_commands_rust" build \
           --manifest-path tools/web_chat_cli/Cargo.toml \
           --release --target aarch64-unknown-linux-gnu --locked
+
+    - name: Package terminal command assets
+      shell: bash
+      run: |
+        set -euo pipefail
+        python3 tools/native_apply_patch/package_assets.py \
+          --binary tools/native_apply_patch/target/aarch64-unknown-linux-gnu/release/apply_patch \
+          --output app/build/generated/terminal-command-assets
         python3 tools/web_chat_cli/package_assets.py \
           --binary tools/web_chat_cli/target/aarch64-unknown-linux-gnu/release/web-chat \
           --output app/build/generated/terminal-command-assets
