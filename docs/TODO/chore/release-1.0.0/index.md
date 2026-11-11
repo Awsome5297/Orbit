@@ -1,7 +1,7 @@
 ---
 fork: https://github.com/Awsome5297/Orbit
 branch: main
-status: prepared
+status: built
 ---
 
 # 1.0.0 发行基线
@@ -30,4 +30,12 @@ status: prepared
 - 签名 APK 需要核对包名、versionCode 1、versionName 1.0.0 和固定证书。
 - 旧 `+24` 设备安装前需要卸载旧包；本次不验证覆盖安装。
 
-[DONE] 待签名 APK 构建完成并确认后标记。
+[DONE]
+
+## 构建结果
+
+- GitHub Actions `Build` 成功：[43051922251](https://github.com/Awsome5297/Orbit/actions/runs/43051922251)，产物 `operit-android-39`。
+- 签名 APK：130,072,179 字节，SHA-256 `f6bba779b3911ad5b9eb7898985c14eb3ef09ff576429f0e88705579369d0596`。
+- 包名 `com.ai.assistance.operit.orbit`，versionCode 1，versionName 1.0.0。
+- 证书 SHA-256 `AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35`，与既有固定签名一致。
+- 本次未创建标签或 Release；旧版本线处理策略仍未执行。
