@@ -1,7 +1,7 @@
 ---
 fork: https://github.com/Awsome5297/Orbit
 branch: main
-status: built
+status: publishing
 ---
 
 # 1.0.0 发行基线
@@ -20,7 +20,8 @@ status: built
 使用 [Build 工作流](../../../../.github/workflows/build.yml)，引用为 `main`：
 
 - `gradle_task=:app:verifyCiPreviewRelease`
-- `publish_release=false`，只生成签名 APK 和报告，不创建标签或 Release
+- `publish_release=true`，创建 `v1.0.0` 完整包基线 Release
+- `previous_tag` 留空，新版本线没有同基础版本的基础包
 - 版本：`1.0.0` / versionCode 1
 - 包名和固定签名不变：`com.ai.assistance.operit.orbit`，证书 SHA-256 `AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35`
 
@@ -38,4 +39,4 @@ status: built
 - 签名 APK：130,072,179 字节，SHA-256 `f6bba779b3911ad5b9eb7898985c14eb3ef09ff576429f0e88705579369d0596`。
 - 包名 `com.ai.assistance.operit.orbit`，versionCode 1，versionName 1.0.0。
 - 证书 SHA-256 `AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35`，与既有固定签名一致。
-- 本次未创建标签或 Release；旧版本线处理策略仍未执行。
+- 本次创建 `v1.0.0` 完整包基线 Release；旧版本线处理策略仍未执行。
