@@ -2,7 +2,7 @@
 
 客户端统一查询 `Awsome5297/Orbit` 的 GitHub Releases。源码、正式版、补丁版、增量包和固定离线资源都在这个仓库中，不再拆分独立发行仓库。
 
-当前签名版本为 `1.12.2+24`、versionCode 80。Orbit 使用新的固定签名密钥，证书 SHA-256 为 `AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35`。首次发布前需要运行一次 `Bootstrap resources` 工作流，把上游 `resources-v1`、`resources-v2-d16730007f8d94095264` 以及历史安装记录引用的两个 `resources-v2-*` 标签原字节镜像到 Orbit。
+当前签名版本为 `1.0.0`、versionCode 81，作为后续 `1.0.0+n` 增量更新的新基线。Orbit 使用新的固定签名密钥，证书 SHA-256 为 `AF63C4BCE0AFAAE16956249DF4F695E388DE95D05C6A1AFAE98BA0AA5B062D35`。首次发布前需要运行一次 `Bootstrap resources` 工作流，把上游 `resources-v1`、`resources-v2-d16730007f8d94095264` 以及历史安装记录引用的两个 `resources-v2-*` 标签原字节镜像到 Orbit。
 
 ## 渠道与安装
 
