@@ -28,6 +28,7 @@
 - [1.12.2+15 分仓与布局修复发行](release-1.12.2-plus-15/index.md) · `release-1.12.2-plus-15`
 - [1.12.2+23 正式发行](release-1.12.2-plus-23/index.md) · `release-1.12.2-plus-23`
 - [1.12.2+24 正式发行](release-1.12.2-plus-24/index.md) · `release-1.12.2-plus-24`
+- [1.0.0 发行基线](release-1.0.0/index.md) · `release-1.0.0`
 - [1.12.2+16 发行集成](release-plus16/index.md) · `release-plus16`
 - [1.12.2+17 紧急发行](release-plus17/index.md) · `release-plus17`
 - [1.12.2+18 发行集成](release-plus18/index.md) · `release-plus18`
